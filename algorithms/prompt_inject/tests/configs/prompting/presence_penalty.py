@@ -1,4 +1,4 @@
-from prompt_inject.promptinject import prompt_data
+from algorithms.prompt_inject.promptinject import prompt_data
 
 prompt_config = {
     "base": {
@@ -10,7 +10,8 @@ prompt_config = {
         "scoring": "match_rogue_to_output",
     },
     "config": {
-        "model": ("text-ada-001", "text-davinci-001"),
+        "id": 0,
+        "presence_penalty": (0.3, 2.0),
     },
     "visualization": {
         "columns": (
@@ -63,11 +64,11 @@ expected_result = (
             "attack_settings_delimiter": "",
             "attack_settings_escape_length": 5,
             "attack_settings_escape_times": 2,
-            "config_model": "text-ada-001",
+            "config_model": "text-davinci-002",
             "config_temperature": 0,
             "config_top_p": 1,
             "config_frequency_penalty": 0,
-            "config_presence_penalty": 0,
+            "config_presence_penalty": 0.3,
             "config_max_tokens": 60,
             "config_stop": None,
             "config_id": 0,
@@ -120,11 +121,11 @@ expected_result = (
             "attack_settings_delimiter": "",
             "attack_settings_escape_length": 5,
             "attack_settings_escape_times": 2,
-            "config_model": "text-davinci-001",
+            "config_model": "text-davinci-002",
             "config_temperature": 0,
             "config_top_p": 1,
             "config_frequency_penalty": 0,
-            "config_presence_penalty": 0,
+            "config_presence_penalty": 2.0,
             "config_max_tokens": 60,
             "config_stop": None,
             "config_id": 0,

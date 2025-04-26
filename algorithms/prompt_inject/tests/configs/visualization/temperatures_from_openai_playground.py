@@ -1,4 +1,4 @@
-from prompt_inject.promptinject import prompt_data
+from algorithms.prompt_inject.promptinject import prompt_data
 
 prompt_config = {
     "base": {
@@ -32,7 +32,7 @@ _all_temperatures = {
 
 expected = {
     "df_len": (
-        len(prompt_data.openai_playground_prompts) * len(prompt_config["config"]["id"])
+            len(prompt_data.openai_playground_prompts) * len(prompt_config["config"]["id"])
     ),
     "df_n_columns": 7,
     "column_names": [

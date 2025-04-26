@@ -1,12 +1,13 @@
 from dataclasses import dataclass
-from typing import Annotated
+from typing import Annotated, Union
 from operator import add
 
-from graph.data.exploit_result import ExploitResult
-from graph.data.prompt import Prompt
+from graph.exploit_result import ExploitResult
+from prompts.prompt_inject_source import PromptInjectSource
 
 
 @dataclass
 class GraphState:
-    prompts: list[Prompt]
+    prompts: list[Union[PromptInjectSource]]
+    generate_new: bool
     results: Annotated[list[ExploitResult], add]
