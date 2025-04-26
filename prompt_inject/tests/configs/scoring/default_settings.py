@@ -1,4 +1,4 @@
-from promptinject import prompt_data
+from prompt_inject.promptinject import prompt_data
 
 prompt_config = {
     "base": {
