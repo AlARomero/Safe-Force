@@ -26,7 +26,7 @@ class Settings(BaseModel):
     prompt_secret_instruction: Optional[str]
     prompt_private_value: Optional[str]
     prompt_instruction: str
-    prompt_shots: List[Any]  # Cambiar si sabés qué estructura tiene
+    prompt_shots: List[Any]  # Cambiar si sabes qué estructura tiene
     prompt_input: str
     prompt_nshot: Optional[int]
     prompt_label: str
