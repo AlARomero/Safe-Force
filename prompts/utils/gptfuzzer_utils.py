@@ -28,7 +28,7 @@ def build_fuzzer_mutate_policy(model_type: str, model, temperature: float) -> Mu
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
 
-def build_fuzzer_model(model_type: str, model_path: str, openai_key: str = None, device: str = "cuda:0") -> LLM:
+def build_model(model_type: str, model_path: str, openai_key: str = None, device: str = "cuda:0") -> LLM:
     if model_type == "openai":
         return OpenAILLM(model_path, openai_key)
     elif model_type == "local":
