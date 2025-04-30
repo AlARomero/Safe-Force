@@ -1,5 +1,8 @@
 from typing import TypedDict
 
+from langgraph.constants import START, END
+from langgraph.graph import StateGraph
+
 import config
 from algorithms.gptfuzzer.fuzzer import GPTFuzzer
 from algorithms.gptfuzzer.utils.predict import RoBERTaPredictor
@@ -45,6 +48,7 @@ def prompt_inject_node(state: GraphState):
         method: str = f"PromptInject | {prompt.get('settings').get('attack_instruction', 'None')}"
         exploit_prompt: str = prompt.get("settings").get("attack_text", {}).get("instruction", "Getting Attack Text Error")
         text: str = prompt.get("prompt", "Getting Prompt Error")
+        text = text.replace(prompt.get("settings").get("attack_rogue_string"), "[INSERT PROMPT HERE]")
         resultados.append(ExploitResult(prompt=text, exploit_prompt=exploit_prompt, target_model=state.target_model, method=method, success=success))
     return {"results": resultados}
 
@@ -87,7 +91,18 @@ def gptfuzzer_node(state: GraphState):
     return {}
 
 def build_graph():
-    raise NotImplementedError("No implementado")
+    builder = StateGraph(GraphState)
+    builder.add_node("prompt_inject_node", prompt_inject_node)
+    builder.add_node("gptfuzzer_node", gptfuzzer_node)
+
+    builder.add_edge(START, "prompt_inject_node")
+    builder.add_edge("prompt_inject_node", "gptfuzzer_node")
+
+    builder.add_edge("gptfuzzer_node", END)
+
+    built_graph = builder.compile()
+
+    return built_graph
 
 
 if __name__ == '__main__':
@@ -96,6 +111,5 @@ if __name__ == '__main__':
     fuzzer = True
     initial_state = GraphState(prompts, target_model, fuzzer, results = [])
 
-    prompt_inject_node(initial_state)
-    #gptfuzzer_node(initial_state)
-    #graph = build_graph()
+    graph = build_graph()
+    graph.invoke(initial_state)
