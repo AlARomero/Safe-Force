@@ -95,7 +95,7 @@ class GPTFuzzer:
         if result_file is None:
             result_file = f'results-{time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())}.csv'
 
-        self.raw_fp = open(result_file, 'w', buffering=1)
+        self.raw_fp = open(result_file, 'w', buffering=1, encoding='utf-8')
         self.writter = csv.writer(self.raw_fp)
         self.writter.writerow(
             ['index', 'prompt', 'response', 'parent', 'results'])
@@ -124,17 +124,27 @@ class GPTFuzzer:
 
     def run(self):
         logging.info("Fuzzing started!")
+        all_generated = []
         try:
             while not self.is_stop():
                 seed = self.select_policy.select()
                 mutated_results = self.mutate_policy.mutate_single(seed)
                 self.evaluate(mutated_results)
-                self.update(mutated_results)
+                generated_prompts, generated_responses = self.update(mutated_results)
+                for p, r in zip(generated_prompts, generated_responses):
+                    all_generated.append({
+                        "prompt": p,
+                        "response": r,
+                        "exploit_prompt": p,
+                        "success": any("jailbreak" in x.lower() for x in r)
+                    })
+                # self.update(mutated_results)
                 self.log()
         except KeyboardInterrupt:
             logging.info("Fuzzing interrupted by user")
         logging.info("Fuzzing finished")
         self.raw_fp.close()
+        return all_generated
 
     def evaluate(self, prompt_nodes: 'list[PromptNode]'):
         for prompt_node in prompt_nodes:
