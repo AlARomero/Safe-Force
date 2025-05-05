@@ -9,4 +9,5 @@ class GraphState:
     prompts: list[Union[PromptInjectSource]]
     target_model: str
     fuzzer: bool
+    leakage: bool
     results: Annotated[list[ExploitResult], add]
