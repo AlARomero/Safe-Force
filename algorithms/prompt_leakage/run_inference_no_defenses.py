@@ -2,7 +2,6 @@ from argparse import ArgumentError
 from tqdm import tqdm
 import random
 from typing import Literal
-
 from algorithms.prompt_leakage.judger.ai_judger import AIJudger
 from algorithms.prompt_leakage.judger.ijudger import Judger
 from algorithms.prompt_leakage.judger.regex_judger import RegexJudger

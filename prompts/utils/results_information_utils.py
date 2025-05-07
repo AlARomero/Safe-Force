@@ -63,6 +63,7 @@ def plot_summary(summary: dict[str, dict[str, int]]):
         'PromptInject': '#4e79a7',
         'MasterKey': '#59a14f',
         'GPTFuzzer': '#b07aa1',
+        'PromptLeakage': '#f28e2b',
         'GLOBAL': '#e15759'
     }
     plt.figure(figsize=(10, 6))

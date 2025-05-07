@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).parent.parent.parent
-INPUT_CSV_PATH = os.path.join(BASE_DIR, "prompts", "GPTFuzzer.csv")
+INPUT_CSV_PATH = os.path.join(BASE_DIR, "prompts", "GPTFuzzer.json")
 OUTPUT_JSON_PATH = os.path.join(BASE_DIR, "results", "masterkey_jailbreaks", "masterkey_jailbreak_results.json")
 
 
