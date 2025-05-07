@@ -5,7 +5,7 @@ import ollama
 
 def run_prompts_api(built_prompts, quiet=False, dry_run=False, api_model: str = "ollama"):
     if not quiet:
-        built_prompts = tqdm(built_prompts)
+        built_prompts = tqdm(built_prompts, desc="Running Prompt Inject")
     for prompt in built_prompts:
         if dry_run:
             prompt["result"] = _get_mocked_api_response()
