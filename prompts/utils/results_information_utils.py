@@ -36,9 +36,11 @@ def print_summary(summary: dict[str, dict[str, int]]):
         global_success, global_total, global_percentage
     ))
 
+
 def plot_summary(summary: dict[str, dict[str, int]]):
     methods = []
     success_rates = []
+    counts = []
     for method, stats in summary.items():
         if method == "__TOTAL__":
             continue
@@ -47,18 +49,42 @@ def plot_summary(summary: dict[str, dict[str, int]]):
         rate = (success / total * 100) if total > 0 else 0.0
         methods.append(method)
         success_rates.append(rate)
+        counts.append((success, total))
+    sorted_data = sorted(zip(methods, success_rates, counts), key=lambda x: x[1], reverse=True)
+    methods = [m for m, _, _ in sorted_data]
+    success_rates = [r for _, r, _ in sorted_data]
+    counts = [c for _, _, c in sorted_data]
     global_stats = summary.get("__TOTAL__", {"success": 0, "total": 0})
     global_rate = (global_stats["success"] / global_stats["total"] * 100) if global_stats["total"] > 0 else 0.0
     methods.append("GLOBAL")
     success_rates.append(global_rate)
-    plt.figure(figsize=(8, 5))
-    bars = plt.bar(methods, success_rates, color=['steelblue' if m != "GLOBAL" else 'darkred' for m in methods])
-    plt.xlabel("Método")
-    plt.ylabel("Tasa de éxito (%)")
-    plt.title("Tasa de éxito por método de explotación")
+    counts.append((global_stats["success"], global_stats["total"]))
+    method_colors = {
+        'PromptInject': '#4e79a7',
+        'MasterKey': '#59a14f',
+        'GPTFuzzer': '#b07aa1',
+        'PromptLeakage': '#f28e2b',
+        'GLOBAL': '#e15759'
+    }
+    plt.figure(figsize=(10, 6))
+    colors = [method_colors.get(m, '#797979') for m in methods]  # gris para métodos no definidos
+    bars = plt.bar(methods, success_rates, color=colors)
+    plt.xlabel("Método", fontsize=12)
+    plt.ylabel("Tasa de éxito (%)", fontsize=12)
+    plt.title("Tasa de éxito por método de explotación", fontsize=14, pad=20)
     plt.ylim(0, 100)
-    for bar, rate in zip(bars, success_rates):
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    for bar, rate, (success, total), method in zip(bars, success_rates, counts, methods):
         yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2, yval + 2, f"{rate:.1f}%", ha='center', va='bottom')
+        text = f"{rate:.1f}%\n({success}/{total})"
+        va = 'bottom' if yval < 90 else 'top'
+        color = 'black' if method != 'GLOBAL' else 'white'
+        plt.text(bar.get_x() + bar.get_width() / 2,
+                 yval + 2 if va == 'bottom' else yval - 2,
+                 text,
+                 ha='center',
+                 va=va,
+                 color=color,
+                 fontsize=10)
     plt.tight_layout()
     plt.show()
