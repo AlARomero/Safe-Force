@@ -11,12 +11,12 @@ class PromptNode:
     def __init__(self,
                  prompt: str,
                  response: Union[list[Tuple[str, str]], list[Tuple[str, list[str]]]] = None,
-                 results: 'list[int]' = None,
+                 results: 'list[Tuple[str, int]]' = None,
                  parent: 'PromptNode' = None,
                  mutator: 'Mutator' = None):
         self.prompt: str = prompt
         self.response: Union[list[Tuple[str, str]], list[Tuple[str, list[str]]]] = response
-        self.results: 'list[int]' = results
+        self.results: 'list[Tuple[str, list[int]]]' = results # [(model, [0, 1, ...]), ...]
         self.visited_num = 0
 
         self.parent: 'PromptNode' = parent

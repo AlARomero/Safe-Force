@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Union
 
 from algorithms.gptfuzzer.agents.evaluator_agent import EvaluatorAgent
 from algorithms.gptfuzzer.agents.mutator_agent import MutatorAgent
@@ -12,7 +13,7 @@ from algorithms.gptfuzzer.fuzzer.selection import SelectPolicy
 class GraphState:
     initial_seeds: list[PromptNode] # Lista de semillas iniciales (Nunca se actualiza)
     actual_list_seeds: list[PromptNode] # Lista de semillas que se esta utilizando (se actualiza con rapidez)
-    active_seed: PromptNode # Semilla elegida para la iteracion
+    active_seed: Union[PromptNode, None] # Semilla elegida para la iteracion
     strategist_agent: StrategistAgent # Agente encargado de la estrategia
     predictor_agent: PredictorAgent # Agente encargado de las predicciones
     mutator_agent: MutatorAgent # Agente encargado de las mutaciones
