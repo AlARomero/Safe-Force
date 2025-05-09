@@ -1,24 +1,21 @@
 import logging
-import time
-import csv
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Tuple
+
 if TYPE_CHECKING:
-    from algorithms.gptfuzzer.fuzzer.Mutators.imutator import Mutator, MutatePolicy
+    from algorithms.gptfuzzer.fuzzer.Mutators.imutator import Mutator
     from .selection import SelectPolicy
-from algorithms.gptfuzzer.llm import LLM, LocalLLM
+from algorithms.gptfuzzer.llm import LLM
 from algorithms.gptfuzzer.utils.template import synthesis_message
-from algorithms.gptfuzzer.utils.predict import Predictor
-import warnings
 
 class PromptNode:
     def __init__(self,
                  prompt: str,
-                 response: str = None,
+                 response: Union[list[Tuple[str, str]], list[Tuple[str, list[str]]]] = None,
                  results: 'list[int]' = None,
                  parent: 'PromptNode' = None,
                  mutator: 'Mutator' = None):
         self.prompt: str = prompt
-        self.response: str = response
+        self.response: Union[list[Tuple[str, str]], list[Tuple[str, list[str]]]] = response
         self.results: 'list[int]' = results
         self.visited_num = 0
 

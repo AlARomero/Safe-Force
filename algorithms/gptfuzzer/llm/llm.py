@@ -12,9 +12,10 @@ from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
 
 
 class LLM:
-    def __init__(self):
+    def __init__(self, model_path):
         self.model = None
         self.tokenizer = None
+        self.model_path = model_path
 
     def generate(self, prompt):
         raise NotImplementedError("LLM must implement generate method.")
@@ -36,7 +37,7 @@ class LocalLLM(LLM):
                  debug=False,
                  system_message=None
                  ):
-        super().__init__()
+        super().__init__(model_path)
         try:
             self.model, self.tokenizer = self.create_model(
                 model_path,
@@ -52,7 +53,6 @@ class LocalLLM(LLM):
         except Exception as e:
             logging.error(e)
 
-        self.model_path = model_path
         self.device = device
 
         if system_message is None and 'Llama-2' in model_path:
@@ -177,8 +177,7 @@ class LocalVLLM(LLM):
                  gpu_memory_utilization=0.95,
                  system_message=None
                  ):
-        super().__init__()
-        self.model_path = model_path
+        super().__init__(model_path)
         self.model = vllm(
             self.model_path, gpu_memory_utilization=gpu_memory_utilization)
         
@@ -232,7 +231,7 @@ class PaLM2LLM(LLM):
                  api_key=None,
                  system_message=None
                 ):
-        super().__init__()
+        super().__init__(model_path)
         
         if len(api_key) != 39:
             raise ValueError('invalid PaLM2 API key')
@@ -278,12 +277,11 @@ class ClaudeLLM(LLM):
                  model_path='claude-instant-1.2',
                  api_key=None
                 ):
-        super().__init__()
+        super().__init__(model_path)
         
         if len(api_key) != 108:
             raise ValueError('invalid Claude API key')
         
-        self.model_path = model_path
         self.api_key = api_key
         self.anthropic = Anthropic(
             api_key=self.api_key
@@ -322,7 +320,7 @@ class OpenAILLM(LLM):
                  api_key=None,
                  system_message=None
                 ):
-        super().__init__()
+        super().__init__(model_path)
 
         if not api_key.startswith('sk-'):
             raise ValueError('OpenAI API key should start with sk-')
@@ -330,7 +328,6 @@ class OpenAILLM(LLM):
             raise ValueError(
                 'OpenAI model path should be gpt-3.5-turbo or gpt-4')
         self.client = OpenAI(api_key = api_key)
-        self.model_path = model_path
         self.system_message = system_message if system_message is not None else "You are a helpful assistant."
 
     def generate(self, prompt, temperature=0, max_tokens=512, n=1, max_trials=10, failure_sleep_time=5):
@@ -367,8 +364,7 @@ class OllamaLLM(LLM):
     def __init__(self,
                  model_path: str,
                  system_message=None):
-        super().__init__()
-        self.model_path = model_path
+        super().__init__(model_path)
         self.system_message = system_message if system_message is not None else "You are a helpful assistant."
 
     def generate(self, prompt, temperature=0, max_tokens=512, n=1):
