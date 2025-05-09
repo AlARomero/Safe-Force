@@ -1,4 +1,4 @@
-from algorithms.gptfuzzer.fuzzer.core import GPTFuzzer
+from algorithms.gptfuzzer.fuzzer import PromptNode
 from algorithms.gptfuzzer.fuzzer.Mutators.imutator import Mutator
 from algorithms.gptfuzzer.utils.template_functions import shorten, expand, rephrase, cross_over, generate_similar
 from algorithms.gptfuzzer.llm import OpenAILLM
@@ -10,9 +10,9 @@ class OpenAIMutatorBase(Mutator):
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
-                 failure_sleep_time: int = 5,
-                 fuzzer: 'GPTFuzzer' = None):
-        super().__init__(fuzzer)
+                 energy: int = 1,
+                 failure_sleep_time: int = 5):
+        super().__init__(energy)
 
         self.model = model
 
@@ -21,7 +21,7 @@ class OpenAIMutatorBase(Mutator):
         self.max_trials = max_trials
         self.failure_sleep_time = failure_sleep_time
 
-    def mutate_single(self, seed) -> 'list[str]':
+    def mutate_single(self, seed: str, prompt_nodes: list[PromptNode]) -> 'list[str]':
         return self.model.generate(seed, self.temperature, self.max_tokens, self.n, self.max_trials, self.failure_sleep_time)
 
 
@@ -31,12 +31,12 @@ class OpenAIMutatorGenerateSimilar(OpenAIMutatorBase):
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
-                 failure_sleep_time: int = 5,
-                 fuzzer: 'GPTFuzzer' = None):
-        super().__init__(model, temperature, max_tokens, max_trials, failure_sleep_time, fuzzer)
+                 energy: int = 1,
+                 failure_sleep_time: int = 5):
+        super().__init__(model, temperature, max_tokens, max_trials, energy,  failure_sleep_time)
 
-    def mutate_single(self, seed):
-        return super().mutate_single(generate_similar(seed, self.fuzzer.prompt_nodes))
+    def mutate_single(self, seed: str, prompt_nodes: list[PromptNode]):
+        return super().mutate_single(generate_similar(seed, prompt_nodes), prompt_nodes)
 
 
 class OpenAIMutatorCrossOver(OpenAIMutatorBase):
@@ -45,12 +45,12 @@ class OpenAIMutatorCrossOver(OpenAIMutatorBase):
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
-                 failure_sleep_time: int = 5,
-                 fuzzer: 'GPTFuzzer' = None):
-        super().__init__(model, temperature, max_tokens, max_trials, failure_sleep_time, fuzzer)
+                 energy: int = 1,
+                 failure_sleep_time: int = 5):
+        super().__init__(model, temperature, max_tokens, max_trials, energy,  failure_sleep_time)
 
-    def mutate_single(self, seed):
-        return super().mutate_single(cross_over(seed, self.fuzzer.prompt_nodes))
+    def mutate_single(self, seed: str, prompt_nodes: list[PromptNode]):
+        return super().mutate_single(cross_over(seed, prompt_nodes), prompt_nodes)
 
 
 class OpenAIMutatorExpand(OpenAIMutatorBase):
@@ -59,12 +59,12 @@ class OpenAIMutatorExpand(OpenAIMutatorBase):
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
-                 failure_sleep_time: int = 5,
-                 fuzzer: 'GPTFuzzer' = None):
-        super().__init__(model, temperature, max_tokens, max_trials, failure_sleep_time, fuzzer)
+                 energy: int = 1,
+                 failure_sleep_time: int = 5):
+        super().__init__(model, temperature, max_tokens, max_trials, energy,  failure_sleep_time)
 
-    def mutate_single(self, seed):
-        return [r + seed for r in super().mutate_single(expand(seed, self.fuzzer.prompt_nodes))]
+    def mutate_single(self, seed: str, prompt_nodes: list[PromptNode]):
+        return [r + seed for r in super().mutate_single(expand(seed, prompt_nodes), prompt_nodes)]
 
 
 class OpenAIMutatorShorten(OpenAIMutatorBase):
@@ -73,12 +73,12 @@ class OpenAIMutatorShorten(OpenAIMutatorBase):
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
-                 failure_sleep_time: int = 5,
-                 fuzzer: 'GPTFuzzer' = None):
-        super().__init__(model, temperature, max_tokens, max_trials, failure_sleep_time, fuzzer)
+                 energy: int = 1,
+                 failure_sleep_time: int = 5):
+        super().__init__(model, temperature, max_tokens, max_trials, energy,  failure_sleep_time)
 
-    def mutate_single(self, seed):
-        return super().mutate_single(shorten(seed, self.fuzzer.prompt_nodes))
+    def mutate_single(self, seed: str, prompt_nodes: list[PromptNode]):
+        return super().mutate_single(shorten(seed, prompt_nodes), prompt_nodes)
 
 
 class OpenAIMutatorRephrase(OpenAIMutatorBase):
@@ -87,9 +87,9 @@ class OpenAIMutatorRephrase(OpenAIMutatorBase):
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
-                 failure_sleep_time: int = 5,
-                 fuzzer: 'GPTFuzzer' = None):
-        super().__init__(model, temperature, max_tokens, max_trials, failure_sleep_time, fuzzer)
+                 energy: int = 1,
+                 failure_sleep_time: int = 5):
+        super().__init__(model, temperature, max_tokens, max_trials, energy, failure_sleep_time)
 
-    def mutate_single(self, seed):
-        return super().mutate_single(rephrase(seed, self.fuzzer.prompt_nodes))
+    def mutate_single(self, seed: str, prompt_nodes: list[PromptNode]):
+        return super().mutate_single(rephrase(seed, prompt_nodes), prompt_nodes)

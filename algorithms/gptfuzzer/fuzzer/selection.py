@@ -1,102 +1,100 @@
 import random
 import numpy as np
 
-from algorithms.gptfuzzer.fuzzer import GPTFuzzer, PromptNode
+from algorithms.gptfuzzer.fuzzer import PromptNode
 
 
 class SelectPolicy:
-    def __init__(self, fuzzer: GPTFuzzer):
-        self.fuzzer = fuzzer
 
-    def select(self) -> PromptNode:
+    def select(self, prompt_nodes: list[PromptNode]) -> PromptNode:
         raise NotImplementedError(
             "SelectPolicy must implement select method.")
 
-    def update(self, prompt_nodes: 'list[PromptNode]'):
+    def update(self, prompt_nodes_to_update: 'list[PromptNode]', all_prompt_nodes_list: list[PromptNode]):
         pass
 
 
 class RoundRobinSelectPolicy(SelectPolicy):
-    def __init__(self, fuzzer: GPTFuzzer = None):
-        super().__init__(fuzzer)
+    def __init__(self):
+        super().__init__()
         self.index: int = 0
 
-    def select(self) -> PromptNode:
-        seed = self.fuzzer.prompt_nodes[self.index]
+    def select(self, prompt_nodes: list[PromptNode]) -> PromptNode:
+        seed = prompt_nodes[self.index]
         seed.visited_num += 1
         return seed
 
-    def update(self, prompt_nodes: 'list[PromptNode]'):
-        self.index = (self.index - 1 + len(self.fuzzer.prompt_nodes)
-                      ) % len(self.fuzzer.prompt_nodes)
+    def update(self, prompt_nodes_to_update: 'list[PromptNode]', all_prompt_nodes_list: list[PromptNode]):
+        self.index = (self.index - 1 + len(all_prompt_nodes_list)
+                      ) % len(all_prompt_nodes_list)
 
 
 class RandomSelectPolicy(SelectPolicy):
-    def __init__(self, fuzzer: GPTFuzzer = None):
-        super().__init__(fuzzer)
+    def __init__(self):
+        super().__init__()
 
-    def select(self) -> PromptNode:
-        seed = random.choice(self.fuzzer.prompt_nodes)
+    def select(self, prompt_nodes: list[PromptNode]) -> PromptNode:
+        seed = random.choice(prompt_nodes)
         seed.visited_num += 1
         return seed
 
 
 class UCBSelectPolicy(SelectPolicy):
-    def __init__(self,
-                 explore_coeff: float = 1.0,
-                 fuzzer: GPTFuzzer = None):
-        super().__init__(fuzzer)
+    def __init__(self, prompt_nodes: list[PromptNode], explore_coeff: float = 1.0):
+        super().__init__()
 
         self.step = 0
         self.last_choice_index = None
         self.explore_coeff = explore_coeff
-        self.rewards = [0 for _ in range(len(self.fuzzer.prompt_nodes))]
+        self.rewards = [0 for _ in range(len(prompt_nodes))]
 
-    def select(self) -> PromptNode:
-        if len(self.fuzzer.prompt_nodes) > len(self.rewards):
+    def select(self, prompt_nodes: list[PromptNode]) -> PromptNode:
+        if len(prompt_nodes) > len(self.rewards):
             self.rewards.extend(
-                [0 for _ in range(len(self.fuzzer.prompt_nodes) - len(self.rewards))])
+                [0 for _ in range(len(prompt_nodes) - len(self.rewards))])
 
         self.step += 1
-        scores = np.zeros(len(self.fuzzer.prompt_nodes))
-        for i, prompt_node in enumerate(self.fuzzer.prompt_nodes):
+        scores = np.zeros(len(prompt_nodes))
+        for i, prompt_node in enumerate(prompt_nodes):
             smooth_visited_num = prompt_node.visited_num + 1
             scores[i] = self.rewards[i] / smooth_visited_num + \
                 self.explore_coeff * \
                 np.sqrt(2 * np.log(self.step) / smooth_visited_num)
 
         self.last_choice_index = np.argmax(scores)
-        self.fuzzer.prompt_nodes[self.last_choice_index].visited_num += 1
-        return self.fuzzer.prompt_nodes[self.last_choice_index]
+        prompt_nodes[self.last_choice_index].visited_num += 1
+        return prompt_nodes[self.last_choice_index]
 
-    def update(self, prompt_nodes: 'list[PromptNode]'):
+    def update(self, prompt_nodes_to_update: 'list[PromptNode]', all_prompt_nodes_list: list[PromptNode]):
         succ_num = sum([prompt_node.num_jailbreak
-                        for prompt_node in prompt_nodes])
+                        for prompt_node in prompt_nodes_to_update])
         self.rewards[self.last_choice_index] += \
-            succ_num / len(self.fuzzer.questions)
+            succ_num / len(all_prompt_nodes_list)
 
 
 class MCTSExploreSelectPolicy(SelectPolicy):
-    def __init__(self, fuzzer: GPTFuzzer = None, ratio=0.5, alpha=0.1, beta=0.2):
-        super().__init__(fuzzer)
+    def __init__(self, questions: list[str], initial_prompt_nodes: list[PromptNode], ratio=0.5, alpha=0.1, beta=0.2):
+        super().__init__()
 
         self.step = 0
         self.mctc_select_path: 'list[PromptNode]' = []
         self.last_choice_index = None
         self.rewards = []
+        self.questions = questions
+        self.initial_prompts_nodes = initial_prompt_nodes.copy()
         self.ratio = ratio  # balance between exploration and exploitation
         self.alpha = alpha  # penalty for level
         self.beta = beta   # minimal reward after penalty
 
-    def select(self) -> PromptNode:
+    def select(self, prompt_nodes: list[PromptNode]) -> PromptNode:
         self.step += 1
-        if len(self.fuzzer.prompt_nodes) > len(self.rewards):
+        if len(prompt_nodes) > len(self.rewards):
             self.rewards.extend(
-                [0 for _ in range(len(self.fuzzer.prompt_nodes) - len(self.rewards))])
+                [0 for _ in range(len(prompt_nodes) - len(self.rewards))])
 
         self.mctc_select_path.clear()
         cur = max(
-            self.fuzzer.initial_prompts_nodes,
+            self.initial_prompts_nodes,
             key=lambda pn:
             self.rewards[pn.index] / (pn.visited_num + 1) +
             self.ratio * np.sqrt(2 * np.log(self.step) /
@@ -122,54 +120,54 @@ class MCTSExploreSelectPolicy(SelectPolicy):
         self.last_choice_index = cur.index
         return cur
 
-    def update(self, prompt_nodes: 'list[PromptNode]'):
+    def update(self, prompt_nodes_to_update: 'list[PromptNode]', all_prompt_nodes_list: list[PromptNode]):
         succ_num = sum([prompt_node.num_jailbreak
-                        for prompt_node in prompt_nodes])
+                        for prompt_node in prompt_nodes_to_update])
 
-        last_choice_node = self.fuzzer.prompt_nodes[self.last_choice_index]
+        last_choice_node = all_prompt_nodes_list[self.last_choice_index]
         for prompt_node in reversed(self.mctc_select_path):
-            reward = succ_num / (len(self.fuzzer.questions)
-                                 * len(prompt_nodes))
+            reward = succ_num / (len(self.questions)
+                                 * len(prompt_nodes_to_update))
             self.rewards[prompt_node.index] += reward * \
                 max(self.beta, (1 - 0.1 * last_choice_node.level))
 
 
 class EXP3SelectPolicy(SelectPolicy):
     def __init__(self,
+                 prompt_nodes: list[PromptNode],
                  gamma: float = 0.05,
-                 alpha: float = 25,
-                 fuzzer: GPTFuzzer = None):
-        super().__init__(fuzzer)
+                 alpha: float = 25):
+        super().__init__()
 
-        self.energy = self.fuzzer.energy
         self.gamma = gamma
         self.alpha = alpha
         self.last_choice_index = None
-        self.weights = [1. for _ in range(len(self.fuzzer.prompt_nodes))]
-        self.probs = [0. for _ in range(len(self.fuzzer.prompt_nodes))]
+        self.weights = [1. for _ in range(len(prompt_nodes))]
+        self.probs = [0. for _ in range(len(prompt_nodes))]
 
-    def select(self) -> PromptNode:
-        if len(self.fuzzer.prompt_nodes) > len(self.weights):
+    def select(self, prompt_nodes: list[PromptNode]) -> PromptNode:
+        # TODO Y si es menor?
+        if len(prompt_nodes) > len(self.weights):
             self.weights.extend(
-                [1. for _ in range(len(self.fuzzer.prompt_nodes) - len(self.weights))])
+                [1. for _ in range(len(prompt_nodes) - len(self.weights))])
 
         np_weights = np.array(self.weights)
         probs = (1 - self.gamma) * np_weights / np_weights.sum() + \
-            self.gamma / len(self.fuzzer.prompt_nodes)
+            self.gamma / len(prompt_nodes)
 
         self.last_choice_index = np.random.choice(
-            len(self.fuzzer.prompt_nodes), p=probs)
+            len(prompt_nodes), p=probs)
 
-        self.fuzzer.prompt_nodes[self.last_choice_index].visited_num += 1
+        prompt_nodes[self.last_choice_index].visited_num += 1
         self.probs[self.last_choice_index] = probs[self.last_choice_index]
 
-        return self.fuzzer.prompt_nodes[self.last_choice_index]
+        return prompt_nodes[self.last_choice_index]
 
-    def update(self, prompt_nodes: 'list[PromptNode]'):
+    def update(self, prompt_nodes_to_update: 'list[PromptNode]', all_prompt_nodes_list: list[PromptNode]):
         succ_num = sum([prompt_node.num_jailbreak
-                        for prompt_node in prompt_nodes])
+                        for prompt_node in prompt_nodes_to_update])
 
-        r = 1 - succ_num / len(prompt_nodes)
+        r = 1 - succ_num / len(prompt_nodes_to_update)
         x = -1 * r / self.probs[self.last_choice_index]
         self.weights[self.last_choice_index] *= np.exp(
-            self.alpha * x / len(self.fuzzer.prompt_nodes))
+            self.alpha * x / len(all_prompt_nodes_list))
