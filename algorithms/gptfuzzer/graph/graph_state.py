@@ -24,3 +24,4 @@ class GraphState:
     questions: list[str] # Lista de preguntas utilizadas para generar prompts junto a los templates semilla
     generated: int # Numero de prompts generados hasta el momento
     energy: int # Numero de mutaciones a realizar por tirada
+    should_continue: bool # Indica si se deben hacer más iteraciones

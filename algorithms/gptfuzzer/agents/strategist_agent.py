@@ -13,6 +13,7 @@ class StrategistAgent:
     # TODO Podria elegir tambien mutador a usar y la temperatura del mismo. Tambien podria indicar si hay que terminar el proceso o no
     def __init__(self, politica_seleccion: SelectPolicy, model_path: str = "llama3:8b"):
         self.tasa_anterior: int = -1 # Numero de success en la iteracion anterior. -1 en caso de ser la primera iteracion
+        self.iteration: int = 0 # Indica el numero de iteraciones dadas
         self.politica_seleccion_anterior: SelectPolicy = politica_seleccion
         # TODO Poner modelo modular
         self.temperature: float = 0.4
@@ -83,6 +84,13 @@ class StrategistAgent:
                 return nueva_politica
         return self.politica_seleccion_anterior
 
+    def continue_choice(self, selected: list[PromptNode]):
+        self.iteration += 1
+        should_continue = False
+        if len(selected) > 0:
+            should_continue = True
+        return should_continue
+
 # Clase que sirve de template para interpretar la salida del modelo a la peticion de cambiar la politica de seleccion
 class _SelectorOutput(BaseModel):
     policy: str
@@ -105,9 +113,3 @@ class _SelectorOutput(BaseModel):
         }
         politica = mapa[self.policy]
         return politica
-
-def continue_choice(self, selected: list[PromptNode]):
-    should_continue = False
-    if len(selected) > 0:
-        should_continue = True
-    return should_continue

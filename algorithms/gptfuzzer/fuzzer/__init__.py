@@ -1,1 +1,1 @@
-from .core import GPTFuzzer, PromptNode
+from .core import PromptNode

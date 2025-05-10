@@ -37,15 +37,20 @@ class PromptNode:
 
     @property
     def num_jailbreak(self):
-        return sum(self.results)
-
-    @property
-    def num_reject(self):
-        return len(self.results) - sum(self.results)
+        entero: int = sum([sum(lista_resultados) for model, lista_resultados in self.results])
+        return entero
 
     @property
     def num_query(self):
-        return len(self.results)
+        total: int = 0
+        for model, results in self.results:
+            total += len(results)
+        return total
+
+    @property
+    def num_reject(self):
+        return self.num_query - self.num_jailbreak
+
 
 """
 def is_stop(self):
@@ -98,9 +103,6 @@ def evaluate(target: LLM, questions: list[str], prompt_nodes: 'list[PromptNode]'
                 response, list) else response)
 
         prompt_node.response = responses
-
-def update(prompt_nodes: 'list[PromptNode]', select_policy: SelectPolicy):
-    select_policy.update(prompt_nodes)
 
 def log(iteration):
     logging.info(

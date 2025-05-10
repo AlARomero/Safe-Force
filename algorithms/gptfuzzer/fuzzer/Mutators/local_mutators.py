@@ -31,7 +31,7 @@ class LocalMutatorGenerateSimilar(LocalMutatorBase):
         super().__init__(model, temperature, energy, max_tokens)
 
     def mutate_single(self, seed, prompt_nodes):
-        return super().mutate_single(generate_similar(seed, prompt_nodes))
+        return super().mutate_single(generate_similar(seed, prompt_nodes), prompt_nodes)
 
 class LocalMutatorCrossOver(LocalMutatorBase):
     def __init__(self,

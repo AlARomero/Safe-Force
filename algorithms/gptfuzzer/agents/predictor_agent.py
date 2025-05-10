@@ -8,5 +8,6 @@ class PredictorAgent:
         else:
             self.predictor_model = Predictor(model_path)
 
-    def predict(self, resultados: list[str]):
-        self.predictor_model.predict(resultados)
+    def predict(self, resultados: list[str]) -> list[int]:
+        predicted_classes: list[int] = self.predictor_model.predict(resultados)
+        return predicted_classes

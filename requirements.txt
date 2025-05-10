@@ -4,4 +4,5 @@ loguru~=0.7.2
 nltk
 rouge-score
 vertexai
+langgraph
 cohere==4.56
