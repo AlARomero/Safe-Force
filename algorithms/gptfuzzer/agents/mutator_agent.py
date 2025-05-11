@@ -29,11 +29,7 @@ def build_fuzzer_mutate_policy(model_type: str, model, temperature: float, energ
 
 class MutatorAgent:
     def __init__(self, model_path: str = "llama3:8b", temperature: float = 0.4, energy: int = 1):
-        model_type: str
-        if model_path.__contains__("gpt"):
-            model_type = "openai"
-        else:
-            model_type = "ollama"
+        model_type: str = "openai" if "gpt" in model_path else "ollama"
         self.model = get_llm(model_path)
         self.mutate_policy = build_fuzzer_mutate_policy(model_type, self.model, temperature, energy)
         self.temperature = temperature
@@ -45,11 +41,7 @@ class MutatorAgent:
         self.temperature = temperature
 
     def change_model(self, model_path: str = "llama3:8b"):
-        model_type: str
-        if model_path.__contains__("gpt"):
-            model_type = "openai"
-        else:
-            model_type = "ollama"
+        model_type: str = "openai" if "gpt" in model_path else "ollama"
         self.model = get_llm(model_path)
         self.mutate_policy = build_fuzzer_mutate_policy(model_type, self.model, self.temperature, self.energy)
         self.model_type = model_type

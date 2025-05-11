@@ -1,8 +1,6 @@
 import json
 from typing import Dict, Any, Union
-
 from pydantic import BaseModel
-
 from algorithms.gptfuzzer.fuzzer.core import PromptNode
 from algorithms.gptfuzzer.fuzzer.selection import SelectPolicy, RoundRobinSelectPolicy, RandomSelectPolicy, \
     UCBSelectPolicy, MCTSExploreSelectPolicy, EXP3SelectPolicy
@@ -14,11 +12,12 @@ class StrategistAgent:
     def __init__(self, politica_seleccion: SelectPolicy, model_path: str = "llama3:8b"):
         self.tasa_anterior: int = -1 # Numero de success en la iteracion anterior. -1 en caso de ser la primera iteracion
         self.iteration: int = 0 # Indica el numero de iteraciones dadas
+        self.max_iterations = 55
+        self.min_iterations = 15
         self.politica_seleccion_anterior: SelectPolicy = politica_seleccion
         # TODO Poner modelo modular
         self.temperature: float = 0.4
         self.model = get_llm(model_path)
-
         self.selector_prompt = """
         *** ROLE ***
         You are an algorithm strategist.
@@ -70,6 +69,15 @@ class StrategistAgent:
         *** END INPUT EXPLAIN ***
         """
 
+    def continue_choice(self, selected: list[PromptNode]) -> bool:
+        self.iteration += 1
+        stop_conditions = [self.iteration >= self.max_iterations, len(selected) <= 0, (all(p.num_jailbreak == 0 for p in selected) and self.iteration > self.min_iterations)]
+        if any(stop_conditions):
+            should_continue = False
+        else:
+            should_continue = True
+        return should_continue
+
     def new_selection_strategy(self, prompt_results: list[PromptNode]):
         exitos_por_prompt: int = sum(1 for prompt in prompt_results if prompt.num_jailbreak > 0)
         if exitos_por_prompt < self.tasa_anterior:
@@ -78,18 +86,17 @@ class StrategistAgent:
                 seleccion = _SelectorOutput(**json.loads(self.model.generate(self.selector_prompt, self.temperature))[0])
             except Exception as e:
                 seleccion = None
-
             if seleccion is not None:
                 nueva_politica = seleccion.map_selector_policy()
                 return nueva_politica
         return self.politica_seleccion_anterior
 
-    def continue_choice(self, selected: list[PromptNode]):
+    '''def continue_choice(self, selected: list[PromptNode]):
         self.iteration += 1
         should_continue = False
         if len(selected) > 0:
             should_continue = True
-        return should_continue
+        return should_continue'''
 
 # Clase que sirve de template para interpretar la salida del modelo a la peticion de cambiar la politica de seleccion
 class _SelectorOutput(BaseModel):
@@ -101,15 +108,9 @@ class _SelectorOutput(BaseModel):
         mapa = {
             "RoundRobinSelectPolicy": RoundRobinSelectPolicy(),
             "RandomSelectPolicy": RandomSelectPolicy(),
-            "UCBSelectPolicy": UCBSelectPolicy([],
-                                               self.values.get("explore_coeff", 1.0)),
-            "MCTSExploreSelectPolicy": MCTSExploreSelectPolicy([], [],
-                                                               self.values.get("ratio", 0.5),
-                                                               self.values.get("alpha", 0.1),
-                                                               self.values.get("beta", 0.2)),
-            "EXP3SelectPolicy": EXP3SelectPolicy([],
-                                                 self.values.get("gamma", 0.05),
-                                                 self.values.get("alpha", 25))
+            "UCBSelectPolicy": UCBSelectPolicy([], self.values.get("explore_coeff", 1.0)),
+            "MCTSExploreSelectPolicy": MCTSExploreSelectPolicy([], [], self.values.get("ratio", 0.5), self.values.get("alpha", 0.1), self.values.get("beta", 0.2)),
+            "EXP3SelectPolicy": EXP3SelectPolicy([], self.values.get("gamma", 0.05), self.values.get("alpha", 25))
         }
         politica = mapa[self.policy]
         return politica
