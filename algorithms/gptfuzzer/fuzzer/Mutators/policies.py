@@ -19,4 +19,3 @@ class MutateRandomSinglePolicy(MutatePolicy):
 
     def mutate_batch(self, seeds: list[PromptNode], prompt_nodes):
         raise NotImplementedError("No Implementado")
-

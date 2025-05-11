@@ -18,20 +18,23 @@ from algorithms.gptfuzzer.utils.execution_logger import ExecutionLogger
 
 
 def generator_node(state: GraphState) -> GraphState:
-    logger.log(f"GENERATOR: Generando mutaciones para semilla (energy={state.energy}).")
-    mutated_prompts: list[PromptNode] = state.mutator_agent.mutate(state.active_seed, state.actual_list_seeds)
-    state.results_generated = mutated_prompts
-    logger.log(f"Generadas {len(mutated_prompts)} mutaciones.", "SUCCESS")
+    logger.log(f"🔵 | GENERATOR: Mutando semilla (energy={state.energy}).")
+    state.results_generated = state.mutator_agent.mutate(
+        state.active_seed,
+        state.actual_list_seeds
+    )
+    state.generated += len(state.results_generated)
+    logger.log(f"Prompts y mutaciones generados con éxito.", "SUCCESS")
     return state
 
 def evaluator_node(state: GraphState) -> GraphState:
-    logger.log(f"EVALUATOR: Evaluando {len(state.results_generated)} prompts contra {len(state.evaluator_agent.targets)} modelos.")
+    logger.log(f"⚪ | EVALUATOR: Evaluando {len(state.results_generated)} prompts contra {len(state.evaluator_agent.targets)} modelos.")
     state.evaluator_agent.evaluate(state.results_generated, state.questions)
     logger.log("Evaluación completada para todos los modelos.", "SUCCESS")
     return state
 
 def classifier_node(state: GraphState) -> GraphState:
-    logger.log("CLASSIFIER: Clasificando respuestas usando RoBERTa.")
+    logger.log("🟠 | CLASSIFIER: Clasificando respuestas usando RoBERTa.")
     for prompt in state.results_generated:
         prompt.results = []
         if not hasattr(prompt, 'response') or not isinstance(prompt.response, list):
@@ -43,7 +46,7 @@ def classifier_node(state: GraphState) -> GraphState:
     return state
 
 def get_seed_prompt_node(state: GraphState) -> GraphState:
-    logger.log(f"Seleccionando semilla de {len(state.actual_list_seeds)} disponibles.")
+    logger.log(f"Seleccionando semilla/s de {len(state.actual_list_seeds)} disponible/s.")
     state.active_seed = state.politica_seleccion.select(state.actual_list_seeds)
     if state.active_seed:
         logger.log(f"Semilla seleccionada: {state.active_seed.prompt[:100]}...")
@@ -53,6 +56,7 @@ def get_seed_prompt_node(state: GraphState) -> GraphState:
 
 def selector_node(state: GraphState) -> GraphState:
     # TODO needs prompts: list[PromptNode]
+    logger.log("🔴 | SELECTOR: Identificación de prompts prometedores y reenvío a mutación.")
     selected: list[PromptNode] = []
     for prompt in state.results_generated:
         # TODO Supongo que se podra mejorar el algoritmo, es decir, no tiene en cuenta si en un modelo no se explota pero en el otro si
@@ -65,7 +69,7 @@ def selector_node(state: GraphState) -> GraphState:
     return state
 
 def strategist_node(state: GraphState) -> GraphState:
-    logger.log("STRATEGIST: Revisando estrategia de fuzzing.")
+    logger.log("🔁 | STRATEGIST: Revisión de estrategia de fuzzing y cambio de política.")
     state.increment_iteration()
     if not state.should_continue:
         logger.log("Condiciones de parada alcanzadas. Finalizando ejecución.", "WARNING")
@@ -77,6 +81,7 @@ def strategist_node(state: GraphState) -> GraphState:
     return state
 
 def logger_node(state: GraphState):
+    logger.log("📊 | LOGGER: Guardado de cambios y visualización.")
     write_file(state.result_file, state.results_generated)
     total_jailbreaks = sum(1 for p in state.results_generated if p.num_jailbreak > 0)
     logger.log(f"[Iteración: {state.iteration}] | Jailbreaks en esta iteración: {total_jailbreaks}/{len(state.results_generated)}.")
