@@ -9,7 +9,7 @@ from algorithms.gptfuzzer.utils.llm_utils import get_llm
 
 class StrategistAgent:
     # TODO Podria elegir tambien mutador a usar y la temperatura del mismo. Tambien podria indicar si hay que terminar el proceso o no
-    def __init__(self, politica_seleccion: SelectPolicy, model_path: str = "llama3:8b"):
+    def __init__(self, politica_seleccion: SelectPolicy, model_path: str = "azure/gpt-4-TFM"):
         self.tasa_anterior: int = -1 # Numero de success en la iteracion anterior. -1 en caso de ser la primera iteracion
         self.iteration: int = 0 # Indica el numero de iteraciones dadas
         self.max_iterations = 55
@@ -91,7 +91,7 @@ class StrategistAgent:
                 return nueva_politica
         return self.politica_seleccion_anterior
 
-# Clase que sirve de template para interpretar la salida del modelo a la peticion de cambiar la politica de seleccion
+
 class _SelectorOutput(BaseModel):
     policy: str
     values: Dict[str, Any]

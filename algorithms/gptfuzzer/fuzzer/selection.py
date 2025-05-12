@@ -5,7 +5,6 @@ from algorithms.gptfuzzer.fuzzer import PromptNode
 
 
 class SelectPolicy:
-
     def select(self, prompt_nodes: list[PromptNode]) -> PromptNode:
         raise NotImplementedError(
             "SelectPolicy must implement select method.")
@@ -28,7 +27,6 @@ class RoundRobinSelectPolicy(SelectPolicy):
         self.index = (self.index - 1 + len(all_prompt_nodes_list)
                       ) % len(all_prompt_nodes_list)
 
-
 class RandomSelectPolicy(SelectPolicy):
     def __init__(self):
         super().__init__()
@@ -37,7 +35,6 @@ class RandomSelectPolicy(SelectPolicy):
         seed = random.choice(prompt_nodes)
         seed.visited_num += 1
         return seed
-
 
 class UCBSelectPolicy(SelectPolicy):
     def __init__(self, prompt_nodes: list[PromptNode], explore_coeff: float = 1.0):
@@ -71,7 +68,6 @@ class UCBSelectPolicy(SelectPolicy):
         self.rewards[self.last_choice_index] += \
             succ_num / len(all_prompt_nodes_list)
 
-
 class MCTSExploreSelectPolicy(SelectPolicy):
     def __init__(self, questions: list[str], initial_prompt_nodes: list[PromptNode], ratio=0.5, alpha=0.1, beta=0.2):
         super().__init__()
@@ -91,7 +87,6 @@ class MCTSExploreSelectPolicy(SelectPolicy):
         if len(prompt_nodes) > len(self.rewards):
             self.rewards.extend(
                 [0 for _ in range(len(prompt_nodes) - len(self.rewards))])
-
         self.mctc_select_path.clear()
         cur = max(
             self.initial_prompts_nodes,
@@ -101,7 +96,6 @@ class MCTSExploreSelectPolicy(SelectPolicy):
                                  (pn.visited_num + 0.01))
         )
         self.mctc_select_path.append(cur)
-
         while len(cur.child) > 0:
             if np.random.rand() < self.alpha:
                 break
@@ -113,17 +107,14 @@ class MCTSExploreSelectPolicy(SelectPolicy):
                                      (pn.visited_num + 0.01))
             )
             self.mctc_select_path.append(cur)
-
         for pn in self.mctc_select_path:
             pn.visited_num += 1
-
         self.last_choice_index = cur.index
         return cur
 
     def update(self, prompt_nodes_to_update: 'list[PromptNode]', all_prompt_nodes_list: list[PromptNode]):
         succ_num = sum([prompt_node.num_jailbreak
                         for prompt_node in prompt_nodes_to_update])
-
         last_choice_node = all_prompt_nodes_list[self.last_choice_index]
         for prompt_node in reversed(self.mctc_select_path):
             reward = succ_num / (len(self.questions)
@@ -131,14 +122,12 @@ class MCTSExploreSelectPolicy(SelectPolicy):
             self.rewards[prompt_node.index] += reward * \
                 max(self.beta, (1 - 0.1 * last_choice_node.level))
 
-
 class EXP3SelectPolicy(SelectPolicy):
     def __init__(self,
                  prompt_nodes: list[PromptNode],
                  gamma: float = 0.05,
                  alpha: float = 25):
         super().__init__()
-
         self.gamma = gamma
         self.alpha = alpha
         self.last_choice_index = None
@@ -150,23 +139,18 @@ class EXP3SelectPolicy(SelectPolicy):
         if len(prompt_nodes) > len(self.weights):
             self.weights.extend(
                 [1. for _ in range(len(prompt_nodes) - len(self.weights))])
-
         np_weights = np.array(self.weights)
         probs = (1 - self.gamma) * np_weights / np_weights.sum() + \
             self.gamma / len(prompt_nodes)
-
         self.last_choice_index = np.random.choice(
             len(prompt_nodes), p=probs)
-
         prompt_nodes[self.last_choice_index].visited_num += 1
         self.probs[self.last_choice_index] = probs[self.last_choice_index]
-
         return prompt_nodes[self.last_choice_index]
 
     def update(self, prompt_nodes_to_update: 'list[PromptNode]', all_prompt_nodes_list: list[PromptNode]):
         succ_num = sum([prompt_node.num_jailbreak
                         for prompt_node in prompt_nodes_to_update])
-
         r = 1 - succ_num / len(prompt_nodes_to_update)
         x = -1 * r / self.probs[self.last_choice_index]
         self.weights[self.last_choice_index] *= np.exp(

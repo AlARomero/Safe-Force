@@ -1,5 +1,7 @@
+import os
+
 import torch
-from openai import OpenAI
+from openai import OpenAI, AzureOpenAI
 import ollama
 from fastchat.model import load_model, get_conversation_template
 import logging
@@ -10,6 +12,8 @@ from vllm import SamplingParams
 import google.generativeai as palm
 from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
 
+from dotenv import load_dotenv
+load_dotenv()
 
 class LLM:
     def __init__(self, model_path):
@@ -52,9 +56,7 @@ class LocalLLM(LLM):
             )
         except Exception as e:
             logging.error(e)
-
         self.device = device
-
         if system_message is None and 'Llama-2' in model_path:
             # monkey patch for latest FastChat to use llama2's official system message
             self.system_message = "You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. " \
@@ -86,7 +88,6 @@ class LocalLLM(LLM):
             revision=revision,
             debug=debug,
         )
-
         return model, tokenizer
 
     def set_system_message(self, conv_temp):
@@ -103,15 +104,11 @@ class LocalLLM(LLM):
         conv_temp.append_message(conv_temp.roles[0], prompt)
         conv_temp.append_message(conv_temp.roles[1], None)
         prompt_input = conv_temp.get_prompt()
-
         logging.debug(f"Conversacion creada. Prompt resultante: {prompt_input}")
-
         inputs = self.tokenizer(prompt_input, return_tensors="pt").to(self.device)
         input_ids = inputs["input_ids"]
         attention_mask = inputs["attention_mask"]
-
         logging.debug(f"Tensores inicializados, inicio de generación de resultados. N = {n}")
-
         results: list[str] = []
         for _ in range(n):
             output_ids = self.model.generate(
@@ -122,16 +119,13 @@ class LocalLLM(LLM):
                 repetition_penalty=1.2,
                 max_new_tokens=max_tokens
             )
-
             cleaned_outputs: str
             if self.model.config.is_encoder_decoder:
                 cleaned_outputs = output_ids[0]
             else:
                 cleaned_outputs = output_ids[0][input_ids.shape[-1]:]
-
             results.append(self.tokenizer.decode(cleaned_outputs, skip_special_tokens=True, spaces_between_special_tokens=False))
             logging.debug(f"Resultado {n} generado.")
-
         logging.info("Respuestas generadas")
         return results
 
@@ -140,18 +134,14 @@ class LocalLLM(LLM):
     def generate_batch(self, prompts, temperature=0.01, max_tokens=512, repetition_penalty=1.0, batch_size=16):
         if not prompts:
             return []
-
         prompt_inputs = []
         for prompt in prompts:
             conv_temp = get_conversation_template(self.model_path)
             self.set_system_message(conv_temp)
-
             conv_temp.append_message(conv_temp.roles[0], prompt)
             conv_temp.append_message(conv_temp.roles[1], None)
-
             prompt_input = conv_temp.get_prompt()
             prompt_inputs.append(prompt_input)
-
         if self.tokenizer.pad_token == None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = "left"
@@ -180,7 +170,6 @@ class LocalVLLM(LLM):
         super().__init__(model_path)
         self.model = vllm(
             self.model_path, gpu_memory_utilization=gpu_memory_utilization)
-        
         if system_message is None and 'Llama-2' in model_path:
             # monkey patch for latest FastChat to use llama2's official system message
             self.system_message = "You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. " \
@@ -204,13 +193,10 @@ class LocalVLLM(LLM):
         for prompt in prompts:
             conv_temp = get_conversation_template(self.model_path)
             self.set_system_message(conv_temp)
-
             conv_temp.append_message(conv_temp.roles[0], prompt)
             conv_temp.append_message(conv_temp.roles[1], None)
-
             prompt_input = conv_temp.get_prompt()
             prompt_inputs.append(prompt_input)
-
         sampling_params = SamplingParams(temperature=temperature, max_tokens=max_tokens)
         results = self.model.generate(
             prompt_inputs, sampling_params, use_tqdm=False)
@@ -232,10 +218,8 @@ class PaLM2LLM(LLM):
                  system_message=None
                 ):
         super().__init__(model_path)
-        
         if len(api_key) != 39:
             raise ValueError('invalid PaLM2 API key')
-        
         palm.configure(api_key=api_key)
         available_models = [m for m in palm.list_models()]
         for model in available_models:
@@ -259,7 +243,6 @@ class PaLM2LLM(LLM):
                 logging.warning(
                     f"PaLM2 API call failed due to {e}. Retrying {_+1} / {max_trials} times...")
                 time.sleep(failure_sleep_time)
-
         return [" " for _ in range(n)]
     
     def generate_batch(self, prompts, temperature=0, n=1, max_trials=1, failure_sleep_time=1):
@@ -278,17 +261,14 @@ class ClaudeLLM(LLM):
                  api_key=None
                 ):
         super().__init__(model_path)
-        
         if len(api_key) != 108:
             raise ValueError('invalid Claude API key')
-        
         self.api_key = api_key
         self.anthropic = Anthropic(
             api_key=self.api_key
         )
 
     def generate(self, prompt, max_tokens=512, max_trials=1, failure_sleep_time=1):
-        
         for _ in range(max_trials):
             try:
                 completion = self.anthropic.completions.create(
@@ -301,7 +281,6 @@ class ClaudeLLM(LLM):
                 logging.warning(
                     f"Claude API call failed due to {e}. Retrying {_+1} / {max_trials} times...")
                 time.sleep(failure_sleep_time)
-
         return [" "]
     
     def generate_batch(self, prompts, max_tokens=512, max_trials=1, failure_sleep_time=1):
@@ -359,6 +338,31 @@ class OpenAILLM(LLM):
             for future in concurrent.futures.as_completed(futures):
                 results.extend(future.result())
         return results
+
+
+class AzureOpenAIModel(LLM):
+    def __init__(self, deployment_name: str, model_path: str, temperature: float = 0.4):
+        super().__init__(model_path)
+        self.client = AzureOpenAI(
+            api_version="2025-01-01-preview",
+            azure_endpoint="https://data-tribe-openai.openai.azure.com/",
+            api_key=os.getenv("AZURE_OPENAI_API_KEY")
+        )
+        self.deployment_name = deployment_name
+        self.temperature = temperature
+
+    def generate(self, prompt: str, temperature: float = None):
+        if temperature is None:
+            temperature = self.temperature
+        response = self.client.chat.completions.create(
+            model=self.deployment_name,
+            temperature=temperature,
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt},
+            ])
+        return [response.choices[0].message.content.strip()]
+
 
 class OllamaLLM(LLM):
     def __init__(self,
