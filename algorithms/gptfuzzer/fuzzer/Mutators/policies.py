@@ -15,7 +15,9 @@ class MutateRandomSinglePolicy(MutatePolicy):
         if self.concatentate:
             results = [result + prompt_node_seed.prompt  for result in results]
 
-        return [PromptNode(result, parent=prompt_node_seed, mutator=mutator) for result in results]
+        children = [PromptNode(result, parent=prompt_node_seed, mutator=mutator) for result in results]
+        prompt_node_seed.child.extend(children)
+        return children
 
     def mutate_batch(self, seeds: list[PromptNode], prompt_nodes):
         raise NotImplementedError("No Implementado")

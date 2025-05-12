@@ -25,7 +25,6 @@ class GraphState:
     generated: int # Numero de prompts generados hasta el momento
     energy: int # Numero de mutaciones a realizar por tirada
     should_continue: bool # Indica si se deben hacer más iteraciones
-    jailbreaks: int
     iteration: int = 0
     max_iterations: int = 55
 

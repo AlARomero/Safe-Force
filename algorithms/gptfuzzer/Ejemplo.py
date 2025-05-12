@@ -1,11 +1,7 @@
 import csv
 import datetime
 from langgraph.constants import END
-from langgraph.errors import GraphRecursionError
 from langgraph.graph import StateGraph
-from IPython.display import Image, display
-from langchain_core.runnables.graph import CurveStyle, MermaidDrawMethod, NodeStyles
-from graphviz import Digraph
 import config
 from algorithms.gptfuzzer.agents.evaluator_agent import EvaluatorAgent
 from algorithms.gptfuzzer.agents.mutator_agent import MutatorAgent
@@ -83,21 +79,21 @@ def strategist_node(state: GraphState) -> GraphState:
 def logger_node(state: GraphState):
     logger.log("📊 | LOGGER: Guardado de cambios y visualización.")
     write_file(state.result_file, state.results_generated)
-    total_jailbreaks = sum(1 for p in state.results_generated if p.num_jailbreak > 0)
-    logger.log(f"[Iteración: {state.iteration}] | Jailbreaks en esta iteración: {total_jailbreaks}/{len(state.results_generated)}.")
-    acumulado_jailbreaks = getattr(state, "jailbreaks", 0)
-    acumulado_jailbreaks += total_jailbreaks
-    state.acumulado_jailbreaks = acumulado_jailbreaks
-    logger.log(f"[Iteración: {state.iteration}] | Jailbreaks totales: {acumulado_jailbreaks}.", "INFO")
+    logging_total_jailbreaks = sum(p.num_jailbreak for p in state.results_generated)
+    logger.log(f"[Iteración: {state.iteration}] | Jailbreaks en esta iteración: {logging_total_jailbreaks}/{len(state.results_generated)}.")
 
 def write_file(file: str, results_generated: list[PromptNode], new: bool = False):
-    raw_fp = open(file, 'w', buffering=1, encoding='utf-8')
-    writter = csv.writer(raw_fp)
     if new:
+        raw_fp = open(file, 'w', newline='', encoding='utf-8')
+        writter = csv.writer(raw_fp)
         writter.writerow(
-            ['index', 'prompt', 'response', 'parent', 'results'])
+            ['prompt', 'response', 'parent', 'mutator', 'results'])
+    else:
+        raw_fp = open(file, 'a', newline='', encoding='utf-8')
+        writter = csv.writer(raw_fp)
+
     for prompt_node in results_generated:
-        writter.writerow([prompt_node.index, prompt_node.prompt, prompt_node.response, prompt_node.parent.index, prompt_node.results])
+        writter.writerow([prompt_node.prompt, prompt_node.response, prompt_node.parent.prompt, prompt_node.mutator.__class__.__name__, prompt_node.results])
     raw_fp.close()
 
 
@@ -134,7 +130,6 @@ if __name__ == "__main__":
         evaluator_agent = EvaluatorAgent(targets),
         questions=questions,
         should_continue = True,
-        jailbreaks = 0
     )
     builder = StateGraph(GraphState)
     builder.add_node("Get Seed", get_seed_prompt_node)
@@ -153,7 +148,7 @@ if __name__ == "__main__":
     builder.add_edge("Classifier", "Selector")
     builder.add_edge("Selector", "Strategist")
 
-    builder.add_conditional_edges("Strategist", lambda state: "Generator" if state.should_continue else END,)
+    builder.add_conditional_edges("Strategist", lambda state: "Get Seed" if state.should_continue else END)
 
     logger.log("Compilando grafo.")
     try:
@@ -167,7 +162,7 @@ if __name__ == "__main__":
         result_dict = grafo.invoke(vars(initial_state), {"recursion_limit": 100})
         final_state = GraphState.from_dict(result_dict)
         logger.log("Ejecución completada exitosamente.", "SUCCESS")
-        total_jailbreaks = sum(1 for p in final_state.results_generated if p.num_jailbreak > 0)
+        total_jailbreaks = sum(p.num_jailbreak for p in final_state.results_generated)
         logger.log(f"Resumen final - Iteraciones: {final_state.iteration} | Jailbreaks totales: {total_jailbreaks} | Prompts generados: {len(final_state.results_generated)}.")
     except Exception as e:
         logger.log(f"Error durante ejecución: {str(e)}.", "ERROR")

@@ -91,13 +91,6 @@ class StrategistAgent:
                 return nueva_politica
         return self.politica_seleccion_anterior
 
-    '''def continue_choice(self, selected: list[PromptNode]):
-        self.iteration += 1
-        should_continue = False
-        if len(selected) > 0:
-            should_continue = True
-        return should_continue'''
-
 # Clase que sirve de template para interpretar la salida del modelo a la peticion de cambiar la politica de seleccion
 class _SelectorOutput(BaseModel):
     policy: str
