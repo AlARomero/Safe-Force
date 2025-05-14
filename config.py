@@ -11,8 +11,10 @@ PROMPT_INJECT_CONFIG = {
     "delimiter": "="
 }
 
-OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY")
 DEVICE: str = os.getenv("DEVICE")
+AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")
+
 
 GPTFUZZER_CONFIG = {
     "model_type": "ollama",  # "openai", "local", "ollama"

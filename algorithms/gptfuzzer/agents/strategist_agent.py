@@ -9,7 +9,7 @@ from algorithms.gptfuzzer.utils.llm_utils import get_llm
 
 class StrategistAgent:
     # TODO Podria elegir tambien mutador a usar y la temperatura del mismo. Tambien podria indicar si hay que terminar el proceso o no
-    def __init__(self, politica_seleccion: SelectPolicy, model_path: str = "azure/gpt-4-TFM"):
+    def __init__(self, politica_seleccion: SelectPolicy, model_path: str = "azure/gpt-4-TFM", endpoint: str = None, api_key: str = None):
         self.tasa_anterior: int = -1 # Numero de success en la iteracion anterior. -1 en caso de ser la primera iteracion
         self.iteration: int = 0 # Indica el numero de iteraciones dadas
         self.max_iterations = 55
@@ -17,7 +17,7 @@ class StrategistAgent:
         self.politica_seleccion_anterior: SelectPolicy = politica_seleccion
         # TODO Poner modelo modular
         self.temperature: float = 0.4
-        self.model = get_llm(model_path)
+        self.model = get_llm(model_path, endpoint, api_key)
         self.selector_prompt = """
         *** ROLE ***
         You are an algorithm strategist.

@@ -341,27 +341,36 @@ class OpenAILLM(LLM):
 
 
 class AzureOpenAIModel(LLM):
-    def __init__(self, deployment_name: str, model_path: str, temperature: float = 0.4):
+    def __init__(self, model_path: str, endpoint: str, api_key: str, system_message: str=None):
         super().__init__(model_path)
         self.client = AzureOpenAI(
-            api_version="2025-01-01-preview",
-            azure_endpoint="https://data-tribe-openai.openai.azure.com/",
-            api_key=os.getenv("AZURE_OPENAI_API_KEY")
+            api_version = "2025-01-01-preview",
+            azure_endpoint = endpoint,
+            api_key = api_key
         )
-        self.deployment_name = deployment_name
-        self.temperature = temperature
+        self.model_path = model_path
+        self.system_message = system_message if system_message is not None else "You are a helpful assistant."
 
-    def generate(self, prompt: str, temperature: float = None):
-        if temperature is None:
-            temperature = self.temperature
-        response = self.client.chat.completions.create(
-            model=self.deployment_name,
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt},
-            ])
-        return [response.choices[0].message.content.strip()]
+    def generate(self, prompt, temperature=0, max_tokens=512, n=1, max_trials=10, failure_sleep_time=5):
+        for _ in range(max_trials):
+            try:
+                results = self.client.chat.completions.create(
+                    model=self.model_path,
+                    messages=[
+                        {"role": "system", "content": self.system_message},
+                        {"role": "user", "content": prompt},
+                    ],
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    n=n,
+                )
+                return [results.choices[i].message.content.strip() for i in range(n)]
+            except Exception as e:
+                logging.warning(
+                    f"OpenAI API call failed due to {e}. Retrying {_+1} / {max_trials} times...")
+                time.sleep(failure_sleep_time)
+
+        return [" " for _ in range(n)]
 
 
 class OllamaLLM(LLM):

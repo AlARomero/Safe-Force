@@ -1,12 +1,14 @@
+from typing_extensions import Union
+
 from algorithms.gptfuzzer.fuzzer import PromptNode
 from algorithms.gptfuzzer.fuzzer.Mutators.imutator import Mutator
 from algorithms.gptfuzzer.utils.template_functions import shorten, expand, rephrase, cross_over, generate_similar
-from algorithms.gptfuzzer.llm import OpenAILLM
+from algorithms.gptfuzzer.llm import OpenAILLM, AzureOpenAIModel
 
 
 class OpenAIMutatorBase(Mutator):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: Union[OpenAILLM, AzureOpenAIModel],
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
@@ -27,7 +29,7 @@ class OpenAIMutatorBase(Mutator):
 
 class OpenAIMutatorGenerateSimilar(OpenAIMutatorBase):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: Union[OpenAILLM, AzureOpenAIModel],
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
@@ -41,7 +43,7 @@ class OpenAIMutatorGenerateSimilar(OpenAIMutatorBase):
 
 class OpenAIMutatorCrossOver(OpenAIMutatorBase):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: Union[OpenAILLM, AzureOpenAIModel],
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
@@ -55,7 +57,7 @@ class OpenAIMutatorCrossOver(OpenAIMutatorBase):
 
 class OpenAIMutatorExpand(OpenAIMutatorBase):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: Union[OpenAILLM, AzureOpenAIModel],
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
@@ -69,7 +71,7 @@ class OpenAIMutatorExpand(OpenAIMutatorBase):
 
 class OpenAIMutatorShorten(OpenAIMutatorBase):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: Union[OpenAILLM, AzureOpenAIModel],
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
@@ -83,7 +85,7 @@ class OpenAIMutatorShorten(OpenAIMutatorBase):
 
 class OpenAIMutatorRephrase(OpenAIMutatorBase):
     def __init__(self,
-                 model: 'OpenAILLM',
+                 model: Union[OpenAILLM, AzureOpenAIModel],
                  temperature: int = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
