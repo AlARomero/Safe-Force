@@ -31,6 +31,7 @@ def evaluator_node(state: GraphState) -> GraphState:
 
 def classifier_node(state: GraphState) -> GraphState:
     logger.log("🟠 | CLASSIFIER: Clasificando respuestas usando RoBERTa.")
+
     for prompt in state.results_generated:
         prompt.results = []
         if not hasattr(prompt, 'response') or not isinstance(prompt.response, list):
@@ -39,20 +40,24 @@ def classifier_node(state: GraphState) -> GraphState:
         for model, responses in prompt.response:
             predictions = state.predictor_agent.predict(responses if isinstance(responses, list) else [responses])
             prompt.results.append((model, predictions))
+
     return state
 
 def get_seed_prompt_node(state: GraphState) -> GraphState:
     logger.log(f"Seleccionando semilla/s de {len(state.actual_list_seeds)} disponible/s.")
+
     state.active_seed = state.politica_seleccion.select(state.actual_list_seeds)
     if state.active_seed:
         logger.log(f"Semilla seleccionada: {state.active_seed.prompt[:300]}...", "SUCCESS")
     else:
         logger.log("No hay semillas disponibles para seleccionar.", "WARNING")
+
     return state
 
 def selector_node(state: GraphState) -> GraphState:
     # TODO needs prompts: list[PromptNode]
     logger.log("🔴 | SELECTOR: Identificación de prompts prometedores y reenvío a mutación.")
+
     selected: list[PromptNode] = []
     for prompt in state.results_generated:
         # TODO Supongo que se podra mejorar el algoritmo, es decir, no tiene en cuenta si en un modelo no se explota pero en el otro si
@@ -60,19 +65,23 @@ def selector_node(state: GraphState) -> GraphState:
         threshold = int(prompt.num_query * 0.3) # TODO THRESHOLD MODIFICABLE PERO HARDCODEADO
         if casos_positivos >= threshold:
             selected.append(prompt)
+
     logger.log(f"Seleccionadas {len(selected)} semillas prometedoras de {len(state.results_generated)} evaluadas.", "SUCCESS")
-    state.actual_list_seeds = selected
+
+    state.actual_list_seeds.extend(selected)
+    state.politica_seleccion.update(selected, state.actual_list_seeds) # Actualiza la politica de seleccion
     return state
 
 def strategist_node(state: GraphState) -> GraphState:
     logger.log("🔁 | STRATEGIST: Revisión de estrategia de fuzzing y cambio de política.")
+
+    state.should_continue = state.strategist_agent.continue_choice(state.actual_list_seeds)
     if not state.should_continue:
-        logger.log("Condiciones de parada alcanzadas. Finalizando ejecución.", "WARNING")
-    else:
+        # TODO En base a que metemos una nueva politica de seleccion
         nueva_politica = state.strategist_agent.new_selection_strategy(state.results_generated)
-        logger.log(f"Cambiando política de selección a {type(nueva_politica).__name__}.", "SUCCESS")
+        logger.log(f"Politica para la siguiente iteracion de tipo {type(nueva_politica).__name__}.", "SUCCESS")
         state.politica_seleccion = nueva_politica
-        state.should_continue = state.strategist_agent.continue_choice(state.actual_list_seeds)
+
     return state
 
 def logger_node(state: GraphState):
@@ -161,6 +170,7 @@ if __name__ == "__main__":
     logger.log("Iniciando fuzzing.")
     try:
         result_dict = grafo.invoke(vars(initial_state), {"recursion_limit": 100})
+        logger.log("Condiciones de parada alcanzadas. Finalizando ejecución.", "SUCCESS")
         final_state = GraphState.from_dict(result_dict)
         logger.log("Ejecución completada exitosamente.", "SUCCESS")
         total_jailbreaks = sum(p.num_jailbreak for p in final_state.results_generated)

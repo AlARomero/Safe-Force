@@ -86,9 +86,12 @@ class StrategistAgent:
                 seleccion = _SelectorOutput(**json.loads(self.model.generate(self.selector_prompt, self.temperature))[0])
             except Exception as e:
                 seleccion = None
+
             if seleccion is not None:
                 nueva_politica = seleccion.map_selector_policy()
+                self.politica_seleccion_anterior = nueva_politica
                 return nueva_politica
+
         return self.politica_seleccion_anterior
 
 
