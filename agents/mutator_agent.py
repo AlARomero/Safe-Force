@@ -30,7 +30,7 @@ def build_fuzzer_mutate_policy(model: LLM, temperature: float, energy: int) -> M
         raise ValueError(f"Unsupported model type: {model_type}")
 
 class MutatorAgent:
-    def __init__(self, model_path: str = "llama3:8b", temperature: float = 0.4, energy: int = 1):
+    def __init__(self, model_path: str = "ollama/llama3:8b", temperature: float = 0.4, energy: int = 1):
         self.model = get_llm(model_path)
 
         self.mutate_policy = build_fuzzer_mutate_policy(self.model, temperature, energy)
@@ -41,7 +41,7 @@ class MutatorAgent:
         self.mutate_policy = build_fuzzer_mutate_policy(self.model, temperature, self.energy)
         self.temperature = temperature
 
-    def change_model(self, model_path: str = "llama3:8b"):
+    def change_model(self, model_path: str = "ollama/llama3:8b"):
         self.model = get_llm(model_path)
         self.mutate_policy = build_fuzzer_mutate_policy(self.model, self.temperature, self.energy)
 
