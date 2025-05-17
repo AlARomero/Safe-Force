@@ -10,7 +10,7 @@ from utils.llm_utils import get_llm
 
 def build_fuzzer_mutate_policy(model: LLM, temperature: float, energy: int) -> MutateRandomSinglePolicy:
     model_type = type(model)
-    if model_type == OpenAILLM or  model_type == AzureOpenAIModel:
+    if isinstance(model, (OpenAILLM, AzureOpenAIModel)):
         return MutateRandomSinglePolicy([
             OpenAIMutatorCrossOver(model, temperature, energy),
             OpenAIMutatorExpand(model, temperature, energy),
@@ -18,7 +18,7 @@ def build_fuzzer_mutate_policy(model: LLM, temperature: float, energy: int) -> M
             OpenAIMutatorRephrase(model, temperature, energy),
             OpenAIMutatorShorten(model, temperature, energy)
         ], concatentate=True)
-    elif model_type == OllamaLLM or model_type == LocalLLM:
+    elif isinstance(model, (OllamaLLM, LocalLLM)):
         return MutateRandomSinglePolicy([
             LocalMutatorCrossOver(model, temperature, energy),
             LocalMutatorExpand(model, temperature, energy),

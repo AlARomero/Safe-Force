@@ -9,7 +9,7 @@ from llm import OpenAILLM, AzureOpenAIModel
 class OpenAIMutatorBase(Mutator):
     def __init__(self,
                  model: Union[OpenAILLM, AzureOpenAIModel],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
                  energy: int = 1,
@@ -30,7 +30,7 @@ class OpenAIMutatorBase(Mutator):
 class OpenAIMutatorGenerateSimilar(OpenAIMutatorBase):
     def __init__(self,
                  model: Union[OpenAILLM, AzureOpenAIModel],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
                  energy: int = 1,
@@ -44,7 +44,7 @@ class OpenAIMutatorGenerateSimilar(OpenAIMutatorBase):
 class OpenAIMutatorCrossOver(OpenAIMutatorBase):
     def __init__(self,
                  model: Union[OpenAILLM, AzureOpenAIModel],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
                  energy: int = 1,
@@ -58,7 +58,7 @@ class OpenAIMutatorCrossOver(OpenAIMutatorBase):
 class OpenAIMutatorExpand(OpenAIMutatorBase):
     def __init__(self,
                  model: Union[OpenAILLM, AzureOpenAIModel],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
                  energy: int = 1,
@@ -72,7 +72,7 @@ class OpenAIMutatorExpand(OpenAIMutatorBase):
 class OpenAIMutatorShorten(OpenAIMutatorBase):
     def __init__(self,
                  model: Union[OpenAILLM, AzureOpenAIModel],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
                  energy: int = 1,
@@ -86,7 +86,7 @@ class OpenAIMutatorShorten(OpenAIMutatorBase):
 class OpenAIMutatorRephrase(OpenAIMutatorBase):
     def __init__(self,
                  model: Union[OpenAILLM, AzureOpenAIModel],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  max_tokens: int = 512,
                  max_trials: int = 100,
                  energy: int = 1,

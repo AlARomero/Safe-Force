@@ -9,7 +9,7 @@ from llm import LocalLLM, OllamaLLM
 class LocalMutatorBase(Mutator):
     def __init__(self,
                  model: Union[LocalLLM, OllamaLLM],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  energy: int = 1,
                  max_tokens: int = 512):
         super().__init__(energy)
@@ -25,7 +25,7 @@ class LocalMutatorBase(Mutator):
 class LocalMutatorGenerateSimilar(LocalMutatorBase):
     def __init__(self,
                  model: Union[LocalLLM, OllamaLLM],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  energy: int = 1,
                  max_tokens: int = 512):
         super().__init__(model, temperature, energy, max_tokens)
@@ -36,7 +36,7 @@ class LocalMutatorGenerateSimilar(LocalMutatorBase):
 class LocalMutatorCrossOver(LocalMutatorBase):
     def __init__(self,
                  model: Union[LocalLLM, OllamaLLM],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  energy: int = 1,
                  max_tokens: int = 512):
         super().__init__(model, temperature, energy, max_tokens)
@@ -47,7 +47,7 @@ class LocalMutatorCrossOver(LocalMutatorBase):
 class LocalMutatorExpand(LocalMutatorBase):
     def __init__(self,
                  model: Union[LocalLLM, OllamaLLM],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  energy: int = 1,
                  max_tokens: int = 512):
         super().__init__(model, temperature, energy, max_tokens)
@@ -58,7 +58,7 @@ class LocalMutatorExpand(LocalMutatorBase):
 class LocalMutatorShorten(LocalMutatorBase):
     def __init__(self,
                  model: Union[LocalLLM, OllamaLLM],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  energy: int = 1,
                  max_tokens: int = 512):
         super().__init__(model, temperature, energy, max_tokens)
@@ -69,7 +69,7 @@ class LocalMutatorShorten(LocalMutatorBase):
 class LocalMutatorRephrase(LocalMutatorBase):
     def __init__(self,
                  model: Union[LocalLLM, OllamaLLM],
-                 temperature: int = 1,
+                 temperature: float = 1,
                  energy: int = 1,
                  max_tokens: int = 512):
         super().__init__(model, temperature, energy, max_tokens)
