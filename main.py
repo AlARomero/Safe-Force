@@ -75,8 +75,8 @@ def selector_node(state: GraphState) -> GraphState:
 def strategist_node(state: GraphState) -> GraphState:
     logger.log("🔁 | STRATEGIST: Revisión de estrategia de fuzzing y cambio de política.")
 
-    state.should_continue = state.strategist_agent.continue_choice(state.actual_list_seeds)
-    if not state.should_continue:
+    state.should_continue = state.strategist_agent.continue_choice(state.results_generated)
+    if state.should_continue:
         # TODO En base a que metemos una nueva politica de seleccion
         nueva_politica = state.strategist_agent.new_selection_strategy(state.results_generated)
         logger.log(f"Politica para la siguiente iteracion de tipo {type(nueva_politica).__name__}.", "SUCCESS")

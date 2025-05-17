@@ -69,9 +69,9 @@ class StrategistAgent:
         *** END INPUT EXPLAIN ***
         """
 
-    def continue_choice(self, selected: list[PromptNode]) -> bool:
+    def continue_choice(self, generated: list[PromptNode]) -> bool:
         self.iteration += 1
-        stop_conditions = [self.iteration >= self.max_iterations, len(selected) <= 0, (all(p.num_jailbreak == 0 for p in selected) and self.iteration > self.min_iterations)]
+        stop_conditions = [self.iteration >= self.max_iterations, len(generated) <= 0, (all(p.num_jailbreak == 0 for p in generated) and self.iteration > self.min_iterations)]
         if any(stop_conditions):
             should_continue = False
         else:

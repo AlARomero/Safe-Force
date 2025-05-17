@@ -4,13 +4,13 @@ from mutators.openai_mutators import OpenAIMutatorCrossOver, OpenAIMutatorExpand
     OpenAIMutatorGenerateSimilar, OpenAIMutatorRephrase, OpenAIMutatorShorten
 from mutators import MutateRandomSinglePolicy
 from graph.prompt_node import PromptNode
-from llm import LLM, OpenAILLM, AzureOpenAIModel, LocalLLM, OllamaLLM
+from llm import LLM, OpenAILLM, AzureOpenAILLM, LocalLLM, OllamaLLM
 from utils.llm_utils import get_llm
 
 
 def build_fuzzer_mutate_policy(model: LLM, temperature: float, energy: int) -> MutateRandomSinglePolicy:
     model_type = type(model)
-    if isinstance(model, (OpenAILLM, AzureOpenAIModel)):
+    if isinstance(model, (OpenAILLM, AzureOpenAILLM)):
         return MutateRandomSinglePolicy([
             OpenAIMutatorCrossOver(model, temperature, energy),
             OpenAIMutatorExpand(model, temperature, energy),

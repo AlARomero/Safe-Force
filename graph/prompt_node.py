@@ -13,7 +13,7 @@ class PromptNode:
                  mutator: 'Mutator' = None):
         self.prompt: str = prompt
         self.response: Union[list[Tuple[str, str]], list[Tuple[str, list[str]]]] = response
-        self.results: 'list[Tuple[str, list[int]]]' = results # [(model, [0, 1, ...]), ...]
+        self.results: 'list[Tuple[str, list[int]]]' = results if not None else [] # [(model, [0, 1, ...]), ...]
         self.visited_num = 0
 
         self.parent: 'PromptNode' = parent

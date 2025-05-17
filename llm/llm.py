@@ -340,7 +340,7 @@ class OpenAILLM(LLM):
         return results
 
 
-class AzureOpenAIModel(LLM):
+class AzureOpenAILLM(LLM):
     def __init__(self, model_path: str, endpoint: str, api_key: str, system_message: str=None):
         super().__init__(model_path)
         self.client = AzureOpenAI(
