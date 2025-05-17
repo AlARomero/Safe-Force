@@ -115,7 +115,7 @@ if __name__ == "__main__":
     strategist_model_endpoint: str = config.AZURE_OPENAI_ENDPOINT
     strategist_model_api_key: str = config.AZURE_OPENAI_API_KEY
     predictor_model_path: str = "hubert233/GPTFuzz"
-    mutator_model_path: str = "llama3:8b"
+    mutator_model_path: str = "ollama/llama3:8b"
     mutator_temperature: float = 0.4
     energy = 7
     politica_seleccion: SelectPolicy = RoundRobinSelectPolicy()

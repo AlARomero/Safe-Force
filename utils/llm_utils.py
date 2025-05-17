@@ -1,12 +1,16 @@
-from llm import OpenAILLM, OllamaLLM
+from llm import OpenAILLM, OllamaLLM, LocalLLM
 from llm.llm import AzureOpenAIModel
 
 
 def get_llm(model_path: str, endpoint: str = None, api_key: str = None):
-    if "azure/" in model_path:
-        model = AzureOpenAIModel(model_path.split("/")[1], endpoint, api_key)
-    elif "gpt" in model_path:
-        model = OpenAILLM(model_path, api_key)
+    parsed_model_path = model_path.split("/")[1]
+    model_api = model_path.split("/")[0]
+    if "azure" == model_api:
+        model = AzureOpenAIModel(parsed_model_path, endpoint, api_key) # Azure OpenAI
+    elif "openai" == model_api:
+        model = OpenAILLM(parsed_model_path, api_key) # Openai
+    elif "ollama" == model_api:
+        model = OllamaLLM(parsed_model_path) # Ollama
     else:
-        model = OllamaLLM(model_path)
+        model = LocalLLM(model_path) # HuggingFace, necesita utilizarse el path entero
     return model

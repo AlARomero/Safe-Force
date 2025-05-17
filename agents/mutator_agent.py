@@ -4,11 +4,13 @@ from mutators.openai_mutators import OpenAIMutatorCrossOver, OpenAIMutatorExpand
     OpenAIMutatorGenerateSimilar, OpenAIMutatorRephrase, OpenAIMutatorShorten
 from mutators import MutateRandomSinglePolicy
 from graph.prompt_node import PromptNode
+from llm import LLM, OpenAILLM, AzureOpenAIModel, LocalLLM, OllamaLLM
 from utils.llm_utils import get_llm
 
 
-def build_fuzzer_mutate_policy(model_type: str, model, temperature: float, energy: int) -> MutateRandomSinglePolicy:
-    if model_type == "openai":
+def build_fuzzer_mutate_policy(model: LLM, temperature: float, energy: int) -> MutateRandomSinglePolicy:
+    model_type = type(model)
+    if model_type == OpenAILLM or  model_type == AzureOpenAIModel:
         return MutateRandomSinglePolicy([
             OpenAIMutatorCrossOver(model, temperature, energy),
             OpenAIMutatorExpand(model, temperature, energy),
@@ -16,7 +18,7 @@ def build_fuzzer_mutate_policy(model_type: str, model, temperature: float, energ
             OpenAIMutatorRephrase(model, temperature, energy),
             OpenAIMutatorShorten(model, temperature, energy)
         ], concatentate=True)
-    elif model_type in ("local", "ollama"):
+    elif model_type == OllamaLLM or model_type == LocalLLM:
         return MutateRandomSinglePolicy([
             LocalMutatorCrossOver(model, temperature, energy),
             LocalMutatorExpand(model, temperature, energy),
@@ -29,22 +31,19 @@ def build_fuzzer_mutate_policy(model_type: str, model, temperature: float, energ
 
 class MutatorAgent:
     def __init__(self, model_path: str = "llama3:8b", temperature: float = 0.4, energy: int = 1):
-        model_type: str = "openai" if "gpt" in model_path else "ollama"
         self.model = get_llm(model_path)
-        self.mutate_policy = build_fuzzer_mutate_policy(model_type, self.model, temperature, energy)
+
+        self.mutate_policy = build_fuzzer_mutate_policy(self.model, temperature, energy)
         self.temperature = temperature
-        self.model_type = model_type
         self.energy = energy
 
     def change_temperature(self, temperature: float = 0.4):
-        self.mutate_policy = build_fuzzer_mutate_policy(self.model_type, self.model, temperature, self.energy)
+        self.mutate_policy = build_fuzzer_mutate_policy(self.model, temperature, self.energy)
         self.temperature = temperature
 
     def change_model(self, model_path: str = "llama3:8b"):
-        model_type: str = "openai" if "gpt" in model_path else "ollama"
         self.model = get_llm(model_path)
-        self.mutate_policy = build_fuzzer_mutate_policy(model_type, self.model, self.temperature, self.energy)
-        self.model_type = model_type
+        self.mutate_policy = build_fuzzer_mutate_policy(self.model, self.temperature, self.energy)
 
     def mutate(self, seed: PromptNode, from_prompts: list[PromptNode]):
         mutated_prompts: list[PromptNode] = self.mutate_policy.mutate_single(seed, from_prompts)
