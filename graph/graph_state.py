@@ -5,8 +5,8 @@ from agents.evaluator_agent import EvaluatorAgent
 from agents.mutator_agent import MutatorAgent
 from agents.predictor_agent import PredictorAgent
 from agents.strategist_agent import StrategistAgent
-from fuzzer import PromptNode
-from fuzzer.selection import SelectPolicy
+from graph.prompt_node import PromptNode
+from selection.selection import SelectPolicy
 
 
 @dataclass

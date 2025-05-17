@@ -1,7 +1,7 @@
 from typing import Union
 
-from fuzzer import PromptNode
-from fuzzer.Mutators.imutator import Mutator
+from graph.prompt_node import PromptNode
+from mutators.imutator import Mutator
 from utils.template_functions import shorten, expand, rephrase, cross_over, generate_similar
 from llm import LocalLLM, OllamaLLM
 

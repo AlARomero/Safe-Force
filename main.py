@@ -7,8 +7,8 @@ from agents.evaluator_agent import EvaluatorAgent
 from agents.mutator_agent import MutatorAgent
 from agents.predictor_agent import PredictorAgent
 from agents.strategist_agent import StrategistAgent
-from fuzzer.core import PromptNode
-from fuzzer.selection import RoundRobinSelectPolicy, SelectPolicy
+from graph.prompt_node import PromptNode
+from selection.selection import RoundRobinSelectPolicy, SelectPolicy
 from graph.graph_state import GraphState
 from utils.execution_logger import ExecutionLogger
 

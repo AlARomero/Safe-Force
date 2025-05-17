@@ -1,6 +1,6 @@
 import random
 from utils.template import QUESTION_PLACEHOLDER
-from fuzzer.core import PromptNode
+from graph.prompt_node import PromptNode
 
 def generate_similar(seed: str, _: 'list[PromptNode]'):
     return ("I need you to generate one template. I will give you one template example. "

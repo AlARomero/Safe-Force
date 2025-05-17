@@ -1,5 +1,5 @@
-from fuzzer.Mutators.imutator import MutatePolicy, Mutator
-from fuzzer.core import PromptNode
+from mutators.imutator import MutatePolicy, Mutator
+from graph.prompt_node import PromptNode
 import random
 
 class MutateRandomSinglePolicy(MutatePolicy):

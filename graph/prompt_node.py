@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Union, Tuple
 
 if TYPE_CHECKING:
-    from fuzzer.Mutators.imutator import Mutator
+    from mutators.imutator import Mutator
 
 
 class PromptNode:

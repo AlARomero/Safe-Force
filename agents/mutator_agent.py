@@ -1,9 +1,9 @@
-from fuzzer.Mutators.local_mutators import LocalMutatorCrossOver, LocalMutatorExpand, \
+from mutators import LocalMutatorCrossOver, LocalMutatorExpand, \
     LocalMutatorGenerateSimilar, LocalMutatorRephrase, LocalMutatorShorten
-from fuzzer.Mutators.openai_mutators import OpenAIMutatorCrossOver, OpenAIMutatorExpand, \
+from mutators.openai_mutators import OpenAIMutatorCrossOver, OpenAIMutatorExpand, \
     OpenAIMutatorGenerateSimilar, OpenAIMutatorRephrase, OpenAIMutatorShorten
-from fuzzer.Mutators.policies import MutateRandomSinglePolicy
-from fuzzer.core import PromptNode
+from mutators import MutateRandomSinglePolicy
+from graph.prompt_node import PromptNode
 from utils.llm_utils import get_llm
 
 

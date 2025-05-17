@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from fuzzer import PromptNode
+from graph.prompt_node import PromptNode
 from llm.llm import LLM
 from utils.llm_utils import get_llm
 from utils.template import synthesis_message

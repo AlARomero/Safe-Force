@@ -1,8 +1,8 @@
 import json
 from typing import Dict, Any, Union
 from pydantic import BaseModel
-from fuzzer.core import PromptNode
-from fuzzer.selection import SelectPolicy, RoundRobinSelectPolicy, RandomSelectPolicy, \
+from graph.prompt_node import PromptNode
+from selection.selection import SelectPolicy, RoundRobinSelectPolicy, RandomSelectPolicy, \
     UCBSelectPolicy, MCTSExploreSelectPolicy, EXP3SelectPolicy
 from utils.llm_utils import get_llm
 

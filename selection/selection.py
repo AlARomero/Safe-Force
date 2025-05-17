@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-from fuzzer import PromptNode
+from graph.prompt_node import PromptNode
 
 
 class SelectPolicy:

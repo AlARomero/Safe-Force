@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from fuzzer import PromptNode
+from graph.prompt_node import PromptNode
 
 
 class Mutator(ABC):
