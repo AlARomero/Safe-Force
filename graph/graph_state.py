@@ -21,7 +21,6 @@ class GraphState:
     results_generated: list[PromptNode] # Resultados de la iteración actual
     politica_seleccion: SelectPolicy # Politica de seleccion escogida
     result_file: str # Documento csv en el que escribir los resultados en tiempo real
-    questions: list[str] # Lista de preguntas utilizadas para generar prompts junto a los templates semilla
     generated: int # Numero de prompts generados hasta el momento
     energy: int # Numero de mutaciones a realizar por tirada
     should_continue: bool # Indica si se deben hacer más iteraciones

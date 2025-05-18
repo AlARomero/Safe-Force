@@ -25,7 +25,7 @@ def generator_node(state: GraphState) -> GraphState:
 
 def evaluator_node(state: GraphState) -> GraphState:
     logger.log(f"⚪ | EVALUATOR: Evaluando {len(state.results_generated)} prompts contra {len(state.evaluator_agent.targets)} modelos.")
-    state.evaluator_agent.evaluate(state.results_generated, state.questions)
+    state.evaluator_agent.evaluate(state.results_generated)
     logger.log("Evaluación completada para todos los modelos.", "SUCCESS")
     return state
 
@@ -139,8 +139,7 @@ if __name__ == "__main__":
         strategist_agent = StrategistAgent(politica_seleccion, strategist_model_path, strategist_model_endpoint, strategist_model_api_key),
         predictor_agent = PredictorAgent(predictor_model_path, config.DEVICE),
         mutator_agent = MutatorAgent(mutator_model_path, mutator_temperature, energy),
-        evaluator_agent = EvaluatorAgent(targets),
-        questions=questions,
+        evaluator_agent = EvaluatorAgent(targets, questions),
         should_continue = True,
     )
     builder = StateGraph(GraphState)
