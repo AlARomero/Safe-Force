@@ -19,11 +19,11 @@ from utils.execution_logger import get_basic_logger
 load_dotenv()
 
 class LLM:
-    def __init__(self, model_path):
+    def __init__(self, model_path, logger_name: str = None):
         self.model = None
         self.tokenizer = None
         self.model_path = model_path
-        self.logger = get_basic_logger(__class__.__name__)
+        self.logger = get_basic_logger(logger_name if logger_name is not None else self.__class__.__name__)
 
     def generate(self, prompt):
         raise NotImplementedError("LLM must implement generate method.")
@@ -45,7 +45,7 @@ class LocalLLM(LLM):
                  debug=False,
                  system_message=None
                  ):
-        super().__init__(model_path)
+        super().__init__(model_path, self.__class__.__name__)
         try:
             self.model, self.tokenizer = self.create_model(
                 model_path,
@@ -171,7 +171,7 @@ class LocalVLLM(LLM):
                  gpu_memory_utilization=0.95,
                  system_message=None
                  ):
-        super().__init__(model_path)
+        super().__init__(model_path, self.__class__.__name__)
         self.model = vllm(
             self.model_path, gpu_memory_utilization=gpu_memory_utilization)
         if system_message is None and 'Llama-2' in model_path:
@@ -221,7 +221,7 @@ class PaLM2LLM(LLM):
                  api_key=None,
                  system_message=None
                 ):
-        super().__init__(model_path)
+        super().__init__(model_path, self.__class__.__name__)
         if len(api_key) != 39:
             raise ValueError('invalid PaLM2 API key')
         palm.configure(api_key=api_key)
@@ -264,7 +264,7 @@ class ClaudeLLM(LLM):
                  model_path='claude-instant-1.2',
                  api_key=None
                 ):
-        super().__init__(model_path)
+        super().__init__(model_path, self.__class__.__name__)
         if len(api_key) != 108:
             raise ValueError('invalid Claude API key')
         self.api_key = api_key
@@ -303,7 +303,7 @@ class OpenAILLM(LLM):
                  api_key=None,
                  system_message=None
                 ):
-        super().__init__(model_path)
+        super().__init__(model_path, self.__class__.__name__)
 
         if not api_key.startswith('sk-'):
             raise ValueError('OpenAI API key should start with sk-')
@@ -348,7 +348,7 @@ class OpenAILLM(LLM):
 
 class AzureOpenAILLM(LLM):
     def __init__(self, model_path: str, endpoint: str, api_key: str, system_message: str=None):
-        super().__init__(model_path)
+        super().__init__(model_path, self.__class__.__name__)
         self.client = AzureOpenAI(
             api_version = "2025-01-01-preview",
             azure_endpoint = endpoint,
@@ -387,7 +387,7 @@ class OllamaLLM(LLM):
     def __init__(self,
                  model_path: str,
                  system_message=None):
-        super().__init__(model_path)
+        super().__init__(model_path, self.__class__.__name__)
         self.system_message = system_message if system_message is not None else "You are a helpful assistant."
 
     def generate(self, prompt, temperature=0, max_tokens=512, n=1):
