@@ -13,6 +13,9 @@ import google.generativeai as palm
 from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
 
 from dotenv import load_dotenv
+
+from utils.execution_logger import get_basic_logger
+
 load_dotenv()
 
 class LLM:
@@ -20,6 +23,7 @@ class LLM:
         self.model = None
         self.tokenizer = None
         self.model_path = model_path
+        self.logger = get_basic_logger(__class__.__name__)
 
     def generate(self, prompt):
         raise NotImplementedError("LLM must implement generate method.")
@@ -322,9 +326,11 @@ class OpenAILLM(LLM):
                     max_tokens=max_tokens,
                     n=n,
                 )
-                return [results.choices[i].message.content for i in range(n)]
+                results = [results.choices[i].message.content for i in range(n)]
+                results = [result if result is not None else " " for result in results]
+                return results
             except Exception as e:
-                logging.warning(
+                self.logger.warning(
                     f"OpenAI API call failed due to {e}. Retrying {_+1} / {max_trials} times...")
                 time.sleep(failure_sleep_time)
 
@@ -352,6 +358,7 @@ class AzureOpenAILLM(LLM):
         self.system_message = system_message if system_message is not None else "You are a helpful assistant."
 
     def generate(self, prompt, temperature=0, max_tokens=512, n=1, max_trials=10, failure_sleep_time=5):
+        self.logger.debug("Generating")
         for _ in range(max_trials):
             try:
                 results = self.client.chat.completions.create(
@@ -364,9 +371,12 @@ class AzureOpenAILLM(LLM):
                     max_tokens=max_tokens,
                     n=n,
                 )
-                return [results.choices[i].message.content.strip() for i in range(n)]
+                self.logger.debug("Generated")
+                results = [results.choices[i].message.content for i in range(n)]
+                results = [result if result is not None else " " for result in results]
+                return results
             except Exception as e:
-                logging.warning(
+                self.logger.warning(
                     f"OpenAI API call failed due to {e}. Retrying {_+1} / {max_trials} times...")
                 time.sleep(failure_sleep_time)
 
@@ -396,6 +406,11 @@ class OllamaLLM(LLM):
                 }
             )
             results.append(result.message.content)
+
+        results = [result if result is not None else " " for result in results]
+        if len(results) == 0:
+            results = [" " for _ in range(n)]
+
         return results
 
     def generate_batch(self, prompts, temperature=0, max_tokens=512, n=1, max_trials=10, failure_sleep_time=5):

@@ -115,7 +115,8 @@ if __name__ == "__main__":
     strategist_model_endpoint: str = config.AZURE_OPENAI_ENDPOINT
     strategist_model_api_key: str = config.AZURE_OPENAI_API_KEY
     predictor_model_path: str = "hubert233/GPTFuzz"
-    mutator_model_path: str = "ollama/llama3:8b"
+    mutator_model_path: str = "azure/gpt-4-TFM"
+    fallback_mutator_model_path: str = "ollama/llama3:8b"
     mutator_temperature: float = 0.4
     energy = 7
     politica_seleccion: SelectPolicy = RoundRobinSelectPolicy()
@@ -138,7 +139,7 @@ if __name__ == "__main__":
         generated = 0,
         strategist_agent = StrategistAgent(politica_seleccion, strategist_model_path, strategist_model_endpoint, strategist_model_api_key),
         predictor_agent = PredictorAgent(predictor_model_path, config.DEVICE),
-        mutator_agent = MutatorAgent(mutator_model_path, mutator_temperature, energy),
+        mutator_agent = MutatorAgent(mutator_model_path, fallback_mutator_model_path, mutator_temperature, energy),
         evaluator_agent = EvaluatorAgent(targets, questions),
         should_continue = True,
     )
