@@ -32,7 +32,6 @@ def build_fuzzer_mutate_policy(model: LLM, temperature: float, energy: int) -> M
 class MutatorAgent:
     def __init__(self, model_path: str = "ollama/llama3:8b", temperature: float = 0.4, energy: int = 1):
         self.model = get_llm(model_path)
-
         self.mutate_policy = build_fuzzer_mutate_policy(self.model, temperature, energy)
         self.temperature = temperature
         self.energy = energy

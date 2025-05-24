@@ -10,7 +10,9 @@ class PromptNode:
                  response: Union[list[Tuple[str, str]], list[Tuple[str, list[str]]]] = None,
                  results: 'list[Tuple[str, int]]' = None,
                  parent: 'PromptNode' = None,
-                 mutator: 'Mutator' = None):
+                 mutator: 'Mutator' = None,
+                 index: int = -1):
+        self.index = index
         self.prompt: str = prompt
         self.response: Union[list[Tuple[str, str]], list[Tuple[str, list[str]]]] = response
         self.results: 'list[Tuple[str, list[int]]]' = results if not None else [] # [(model, [0, 1, ...]), ...]

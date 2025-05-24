@@ -1,0 +1,20 @@
+digraph {
+	__start__
+	"Get Seed"
+	Generator
+	Evaluator
+	Classifier
+	Logger
+	Selector
+	Strategist
+	__end__
+	Classifier -> Logger
+	Classifier -> Selector
+	Evaluator -> Classifier
+	Generator -> Evaluator
+	"Get Seed" -> Generator
+	Selector -> Strategist
+	__start__ -> "Get Seed"
+	Logger -> __end__
+	Strategist -> __end__
+}
