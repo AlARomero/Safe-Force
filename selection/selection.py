@@ -71,6 +71,7 @@ class UCBSelectPolicy(SelectPolicy):
 class MCTSExploreSelectPolicy(SelectPolicy):
     def __init__(self, questions: list[str], initial_prompt_nodes: list[PromptNode], ratio=0.5, alpha=0.1, beta=0.2):
         super().__init__()
+
         self.step = 0
         self.mctc_select_path: 'list[PromptNode]' = []
         self.last_choice_index = None
@@ -145,6 +146,7 @@ class EXP3SelectPolicy(SelectPolicy):
             self.weights.extend([1. for _ in range(len(prompt_nodes) - len(self.weights))])
         if len(prompt_nodes) > len(self.probs):
             self.probs.extend([0. for _ in range(len(prompt_nodes) - len(self.probs))])
+
         np_weights = np.array(self.weights)
         probs = (1 - self.gamma) * np_weights / np_weights.sum() + \
             self.gamma / len(prompt_nodes)

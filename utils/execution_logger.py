@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 import sys
 
@@ -29,3 +30,17 @@ class ExecutionLogger:
                 with open(self.log_file_path, 'a', encoding='utf-8') as f:
                     f.write(log_msg + '\n')
             self.last_log_time = current_time
+
+def get_basic_logger(name: str):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    if not logger.hasHandlers():
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setLevel(logging.DEBUG)
+
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        console_handler.setFormatter(formatter)
+
+        logger.addHandler(console_handler)
+
+    return logger
