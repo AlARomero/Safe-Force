@@ -25,7 +25,6 @@ def evaluator_node(state: GraphState) -> GraphState:
 
 def classifier_node(state: GraphState) -> GraphState:
     state.logger.info("🟠 | CLASSIFIER: Clasificando respuestas usando RoBERTa.")
-
     for prompt in state.results_generated:
         prompt.results = []
         if not hasattr(prompt, 'response') or not isinstance(prompt.response, list):
@@ -34,31 +33,25 @@ def classifier_node(state: GraphState) -> GraphState:
         for model, responses in prompt.response:
             predictions = state.predictor_agent.predict(responses if isinstance(responses, list) else [responses])
             prompt.results.append((model, predictions))
-
     return state
 
 def get_seed_prompt_node(state: GraphState) -> GraphState:
     state.logger.info(f"Seleccionando semilla/s de {len(state.actual_list_seeds)} disponible/s.")
-
     if not state.actual_list_seeds:
         state.logger.error("❌ No hay semillas disponibles en 'actual_list_seeds'.")
         state.should_continue = False
         return state
-
     state.active_seed = state.politica_seleccion.select(state.actual_list_seeds)
-
     if state.active_seed:
         state.logger.info(f"Semilla seleccionada: {state.active_seed.prompt[:300]}...")
     else:
         state.logger.error("❌ No se pudo seleccionar una semilla válida.")
         state.should_continue = False
-
     return state
 
 def selector_node(state: GraphState) -> GraphState:
     # TODO needs prompts: list[PromptNode]
     state.logger.info("🔴 | SELECTOR: Identificación de prompts prometedores y reenvío a mutación.")
-
     selected: list[PromptNode] = []
     for prompt in state.results_generated:
         # TODO Supongo que se podra mejorar el algoritmo, es decir, no tiene en cuenta si en un modelo no se explota pero en el otro si
@@ -66,36 +59,43 @@ def selector_node(state: GraphState) -> GraphState:
         threshold = int(prompt.num_query * 0.3) # TODO THRESHOLD MODIFICABLE PERO HARDCODEADO
         if casos_positivos >= threshold:
             selected.append(prompt)
-
     state.logger.info(f"Seleccionadas {len(selected)} semillas prometedoras de {len(state.results_generated)} evaluadas.")
-
     state.actual_list_seeds.extend(selected)
     state.politica_seleccion.update(selected, state.actual_list_seeds) # Actualiza la politica de seleccion
     return state
 
 def strategist_node(state: GraphState) -> GraphState:
     state.logger.info("🔁 | STRATEGIST: Revisión de estrategia de fuzzing y cambio de política.")
-
     state.should_continue = state.strategist_agent.continue_choice(state.results_generated)
     if state.should_continue:
         # TODO En base a que metemos una nueva politica de seleccion
-        nueva_politica = state.strategist_agent.new_selection_strategy(state.results_generated)
+        nueva_politica = state.strategist_agent.new_selection_strategy(state.results_generated, state.last_policy_name, state.success_last_iteration, state.success_current_iteration, state.jailbreak_history, state.recent_policies, state.success_ratio_last, state.success_ratio_current, state.rejection_history)
         state.logger.info(f"Politica para la siguiente iteracion de tipo {type(nueva_politica).__name__}.")
+        policy_name = type(nueva_politica).__name__
+        state.recent_policies.append(policy_name)
+        state.recent_policies = state.recent_policies[-5:]
+        policy_config = getattr(nueva_politica, 'config', {})
+        state.recent_policy_configs.append(policy_config)
+        state.recent_policy_configs = state.recent_policy_configs[-5:]
+        state.last_policy_name = policy_name
+        state.last_policy_values = policy_config
         state.politica_seleccion = nueva_politica
-
     return state
 
 def logger_node(state: GraphState):
     state.logger.info("📊 | LOGGER: Guardado de cambios y visualización.")
-
     selection_policy_name = state.politica_seleccion.__class__.__name__
     write_file(state.result_file, state.results_generated, selection_policy=selection_policy_name)
-
-    logging_total_jailbreaks = sum(p.num_jailbreak for p in state.results_generated)
-    logging_generated_prompts = sum(p.num_query for p in state.results_generated)
-    logging_total_rejections = sum(p.num_reject for p in state.results_generated)
-
-    state.logger.info(f"[Iteración: {state.strategist_agent.iteration}] | Jailbreaks en esta iteración: {logging_total_jailbreaks}/{logging_generated_prompts}. | Rechazos en esta iteración: {logging_total_rejections}")
+    current_jailbreaks = sum(p.num_jailbreak for p in state.results_generated)
+    current_rejections = sum(p.num_reject for p in state.results_generated)
+    current_queries = sum(p.num_query for p in state.results_generated)
+    state.success_ratio_last = state.success_ratio_current
+    state.success_ratio_current = current_jailbreaks / max(current_queries, 1)
+    state.success_last_iteration = state.success_current_iteration
+    state.success_current_iteration = current_jailbreaks
+    state.jailbreak_history.append(current_jailbreaks)
+    state.rejection_history.append(current_rejections)
+    state.logger.info(f"[Iteración: {state.strategist_agent.iteration}] | Jailbreaks en esta iteración: {current_jailbreaks}/{current_queries}. | Rechazos en esta iteración: {current_rejections}")
 
 def write_file(file: str, results_generated: list[PromptNode], selection_policy: str, new: bool = False):
     mode = 'w' if new else 'a'
@@ -123,5 +123,4 @@ def build_graph():
     builder.add_edge("Classifier", "Selector")
     builder.add_edge("Selector", "Strategist")
     builder.add_conditional_edges("Strategist", lambda state: "Get Seed" if state.should_continue else END)
-
     return builder.compile()
