@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from logging import Logger
 from typing import Union
 
 from agents.evaluator_agent import EvaluatorAgent
@@ -24,6 +25,7 @@ class GraphState:
     generated: int # Numero de prompts generados hasta el momento
     energy: int # Numero de mutaciones a realizar por tirada
     should_continue: bool # Indica si se deben hacer más iteraciones
+    logger: Logger # Logger con el que se mostrara por consola toda la informacion
 
     @classmethod
     def from_dict(cls, data: dict):

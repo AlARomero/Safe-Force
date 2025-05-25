@@ -3,7 +3,7 @@ import logging
 
 from graph.prompt_node import PromptNode
 from mutators.imutator import Mutator
-from utils.execution_logger import get_basic_logger
+from utils.logger import get_basic_logger
 from utils.template_functions import shorten, expand, rephrase, cross_over, generate_similar
 from llm import OpenAILLM, AzureOpenAILLM, LocalLLM, OllamaLLM
 

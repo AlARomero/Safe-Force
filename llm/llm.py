@@ -14,7 +14,7 @@ from anthropic import Anthropic, HUMAN_PROMPT, AI_PROMPT
 
 from dotenv import load_dotenv
 
-from utils.execution_logger import get_basic_logger
+from utils.logger import get_basic_logger
 
 load_dotenv()
 
