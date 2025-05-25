@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
 import time
 
 import config
@@ -22,7 +21,7 @@ def app():
     st.markdown("-----------------------")
     st.markdown("  \n")
 
-    modelos_predefinidos = ["ollama/llama3:8b", "ollama/gemma3:1b"]
+    modelos_predefinidos = config.TARGETS
 
     if not st.session_state.started:
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -33,7 +32,7 @@ def app():
                         En caso de no añadir ninguno de los anteriores se considerará que se quiere una ejecución local
                         a través de la api HuggingFace.""")
             st.markdown("Selecciona algoritmos de jailbreak:")
-            algoritmos = st.multiselect(label="", label_visibility="collapsed", accept_new_options=True, options=modelos_predefinidos)
+            st.session_state.algoritmos = st.multiselect(label="Algoritmos disponibles", label_visibility="collapsed", accept_new_options=True, options=modelos_predefinidos)
 
         st.markdown("  \n")
         st.markdown("  \n")
@@ -49,7 +48,7 @@ def app():
             with st.status("Procesando pasos...", expanded=True) as status:
                 # AQUI SE METE LA LOGICA DE LA APP
                 st.write("🔍 Ejecutando Safe-Force...")
-                estado_final_grafo = run_graph()
+                estado_final_grafo = run_graph(st.session_state.algoritmos)
                 if estado_final_grafo is None:
                     st.write("❌ Ha ocurrido un error durante la ejecución")
                     time.sleep(0.5)

@@ -11,9 +11,9 @@ from selection.selection import RoundRobinSelectPolicy, SelectPolicy
 from graph.graph_state import GraphState
 from utils.logger import get_basic_logger
 
-def run() -> Optional[GraphState]:
+def run(targets: list[str]) -> Optional[GraphState]:
     logger = get_basic_logger("Safe-Force-Graph")
-    targets: list[str] = config.TARGETS
+    targets: list[str] = targets
     strategist_model_path: str = "azure/gpt-4-TFM"
     strategist_model_endpoint: str = config.AZURE_OPENAI_ENDPOINT
     strategist_model_api_key: str = config.AZURE_OPENAI_API_KEY
@@ -71,4 +71,4 @@ def run() -> Optional[GraphState]:
         return None
 
 if __name__ == "__main__":
-    result = run()
+    result = run(config.TARGETS)
