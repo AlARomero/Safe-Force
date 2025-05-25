@@ -10,6 +10,9 @@ def generator_node(state: GraphState) -> GraphState:
         state.active_seed,
         state.actual_list_seeds
     )
+    offset = len(state.actual_list_seeds) + state.generated
+    for i, prompt in enumerate(state.results_generated):
+        prompt.index = offset + i
     state.generated += len(state.results_generated)
     state.logger.info(f"Prompts y mutaciones generados con éxito.")
     return state
@@ -37,11 +40,18 @@ def classifier_node(state: GraphState) -> GraphState:
 def get_seed_prompt_node(state: GraphState) -> GraphState:
     state.logger.info(f"Seleccionando semilla/s de {len(state.actual_list_seeds)} disponible/s.")
 
+    if not state.actual_list_seeds:
+        state.logger.error("❌ No hay semillas disponibles en 'actual_list_seeds'.")
+        state.should_continue = False
+        return state
+
     state.active_seed = state.politica_seleccion.select(state.actual_list_seeds)
+
     if state.active_seed:
         state.logger.info(f"Semilla seleccionada: {state.active_seed.prompt[:300]}...")
     else:
-        state.logger.warning("No hay semillas disponibles para seleccionar.")
+        state.logger.error("❌ No se pudo seleccionar una semilla válida.")
+        state.should_continue = False
 
     return state
 
