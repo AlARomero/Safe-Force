@@ -58,12 +58,18 @@ def app():
                     st.write("✅ Ejecucion finalizada...")
                     time.sleep(0.5)
                     st.write("📊 Creando visualizacion")
-                    df = pd.read_csv(config.RESULT_FILE_PATH)
-                    chart_percentage = percentage_chart_plot(df)
-                    chart_bare_results = total_chart_plot(df)
-                    status.update(label="Finalizado", state="complete")
-                    time.sleep(0.5)
-                    st.session_state.done = True
+                    try:
+                        st.session_state.df = pd.read_csv(config.RESULT_FILE_PATH)
+                        st.session_state.chart_percentage = percentage_chart_plot(st.session_state.df)
+                        st.session_state.chart_bare_results = total_chart_plot(st.session_state.df)
+                        status.update(label="Finalizado", state="complete")
+                        time.sleep(0.5)
+                        st.session_state.done = True
+                    except:
+                        st.write("❌ Ha ocurrido un error durante la obtencion de resultados")
+                        time.sleep(0.5)
+                        st.session_state.done = False
+                        st.session_state.started = False
             st.rerun()
 
         if st.session_state.done:
@@ -78,15 +84,14 @@ def app():
             # Crear columnas para centrar la gráfica y la tabla
             col1, col2 = st.columns([2, 3])  # Ajusta el ancho de las columnas
             with col1:
-                st.altair_chart(chart_percentage, use_container_width=True)
-                st.altair_chart(chart_bare_results, use_container_width=True)
+                st.altair_chart(st.session_state.chart_percentage, use_container_width=True)
+                st.altair_chart(st.session_state.chart_bare_results, use_container_width=True)
 
             with col2:
-                st.dataframe(df)
+                st.dataframe(st.session_state.df)
 
             # Botón para descargar CSV
-            csv = df.to_csv(index=False).encode('utf-8')
-
+            csv = st.session_state.df.to_csv(index=False).encode('utf-8')
             st.download_button(
                 label="Descargar CSV",
                 data=csv,
