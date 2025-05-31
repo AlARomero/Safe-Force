@@ -11,15 +11,16 @@ class PromptNode:
                  results: 'list[Tuple[str, int]]' = None,
                  parent: 'PromptNode' = None,
                  mutator: 'Mutator' = None,
+                 mutators_score = None,
                  index: int = -1):
         self.index = index
         self.prompt: str = prompt
         self.response: Union[list[Tuple[str, str]], list[Tuple[str, list[str]]]] = response
         self.results: 'list[Tuple[str, list[int]]]' = results if not None else [] # [(model, [0, 1, ...]), ...]
         self.visited_num = 0
-
         self.parent: 'PromptNode' = parent
         self.mutator: 'Mutator' = mutator
+        self.mutators_score: dict[str, float] = mutators_score or {}
         self.child: 'list[PromptNode]' = []
         self.level: int = 0 if parent is None else parent.level + 1
 
