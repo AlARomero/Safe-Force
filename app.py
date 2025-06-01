@@ -1,3 +1,5 @@
+from argparse import ArgumentError
+
 import streamlit as st
 import pandas as pd
 import time
@@ -24,7 +26,7 @@ def app():
     modelos_predefinidos = config.TARGETS
 
     if not st.session_state.started:
-        col1, col2, col3 = st.columns([1, 2, 1])
+        col1, col2, col3 = st.columns([1, 0.7, 2.3])
         with col1:
             with st.expander("Cómo añadir los modelos"):
                 st.write("""Para añadir modelos se debe introducir inicialmente la api con la que se gestionará el mismo:
@@ -33,6 +35,21 @@ def app():
                         a través de la api HuggingFace.""")
             st.markdown("Selecciona algoritmos de jailbreak:")
             st.session_state.algoritmos = st.multiselect(label="Algoritmos disponibles", label_visibility="collapsed", accept_new_options=True, options=modelos_predefinidos)
+        with col2:
+            archivo = st.file_uploader("Cargar CSV", type="csv", label_visibility="collapsed")
+        if archivo is not None:
+            try:
+                df = pd.read_csv(archivo)
+                if list(df.columns) != ['prompt', 'response', 'parent', 'mutator', 'selection_policy', 'results']:
+                    raise ArgumentError(None, "Error, csv invalido")
+                st.session_state.df = df
+                st.session_state.chart_percentage = percentage_chart_plot(st.session_state.df)
+                st.session_state.chart_bare_results = total_chart_plot(st.session_state.df)
+                st.session_state.started = True
+                st.session_state.done = True
+                st.rerun()
+            except Exception as e:
+                st.info(e)
 
         st.markdown("  \n")
         st.markdown("  \n")
