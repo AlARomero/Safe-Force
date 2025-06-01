@@ -27,12 +27,13 @@ def classifier_node(state: GraphState) -> GraphState:
     state.logger.info("🟠 | CLASSIFIER: Clasificando respuestas usando RoBERTa.")
     for prompt in state.results_generated:
         prompt.results = []
-        if not hasattr(prompt, 'response') or not isinstance(prompt.response, list):
-            state.logger.warning(f"Prompt {getattr(prompt, 'index', '?')} tiene estructura de response inválida.")
-            continue
         for model, responses in prompt.response:
             predictions = state.predictor_agent.predict(responses if isinstance(responses, list) else [responses])
-            prompt.results.append((model, predictions))
+            if len(predictions) == 0:
+                state.logger.warning("Longitud de predicciones 0, procediendo a setear valores en jailbreak fallido")
+                prompt.results.append((model, [0 for _ in prompt.questions]))
+            else:
+                prompt.results.append((model, predictions))
     return state
 
 def get_seed_prompt_node(state: GraphState) -> GraphState:
