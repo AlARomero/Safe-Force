@@ -11,11 +11,11 @@ logger = get_basic_logger(__name__)
 
 class StrategistAgent:
     # TODO Podria elegir tambien mutador a usar y la temperatura del mismo. Tambien podria indicar si hay que terminar el proceso o no
-    def __init__(self, politica_seleccion: SelectPolicy, model_path: str = "azure/gpt-4-TFM", endpoint: str = None, api_key: str = None, questions: list[str] = None):
+    def __init__(self, politica_seleccion: SelectPolicy, questions_used_number: int, model_path: str = "azure/gpt-4-TFM", endpoint: str = None, api_key: str = None):
         self.tasas: list[int] = []
         self.policy_iterations: int = 0
         self.policies_history: list[str] = []
-        self.questions: list[str] = questions
+        self.questions_used_number: int = questions_used_number
         self.total_iteration: int = 0
         self.tasa_anterior: int = -1 # Numero de success en la iteracion anterior. -1 en caso de ser la primera iteracion
         self.iteration: int = 0 # Indica el numero de iteraciones dadas
@@ -149,7 +149,7 @@ class StrategistAgent:
         if seleccion is not None:
             logger.debug(f"Nueva política seleccionada: {seleccion.policy}. | Parámetros de la nueva política: {seleccion.values}")
             logger.debug(f"Explicación del cambio de política: {seleccion.explanation}")
-            nueva_politica = seleccion.map_selector_policy(self.politica_seleccion_anterior, prompt_results, self.questions)
+            nueva_politica = seleccion.map_selector_policy(self.politica_seleccion_anterior, prompt_results, self.questions_used_number)
             self.politica_seleccion_anterior = nueva_politica
             self.policy_iterations = 0
             self.tasa_anterior = self.tasas[-2] if len(self.tasas) > 1 else -1
@@ -164,7 +164,7 @@ class _SelectorOutput(BaseModel):
     values: Dict[str, Any]
     explanation: str
 
-    def map_selector_policy(self, previous_policy: SelectPolicy, prompt_nodes: list[PromptNode], questions: list[str]) -> SelectPolicy:
+    def map_selector_policy(self, previous_policy: SelectPolicy, prompt_nodes: list[PromptNode], questions_used_number: int) -> SelectPolicy:
         if self.policy is None or self.policy.lower() in ["same", "none", ""]:
             return previous_policy
         else:
@@ -172,7 +172,7 @@ class _SelectorOutput(BaseModel):
                 "RoundRobinSelectPolicy": RoundRobinSelectPolicy(),
                 "RandomSelectPolicy": RandomSelectPolicy(),
                 "UCBSelectPolicy": UCBSelectPolicy(prompt_nodes, self.values.get("explore_coeff", 1.0)),
-                "MCTSExploreSelectPolicy": MCTSExploreSelectPolicy(questions, prompt_nodes, self.values.get("ratio", 0.5), self.values.get("alpha", 0.1), self.values.get("beta", 0.2)),
+                "MCTSExploreSelectPolicy": MCTSExploreSelectPolicy(questions_used_number, prompt_nodes, self.values.get("ratio", 0.5), self.values.get("alpha", 0.1), self.values.get("beta", 0.2)),
                 "EXP3SelectPolicy": EXP3SelectPolicy(prompt_nodes, self.values.get("gamma", 0.05), self.values.get("alpha", 25))
             }
             return mapa[self.policy]

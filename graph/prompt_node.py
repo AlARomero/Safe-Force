@@ -20,6 +20,7 @@ class PromptNode:
         self.visited_num = 0
         self.parent: 'PromptNode' = parent
         self.mutator: 'Mutator' = mutator
+        self.questions: list[str] = []
         self.mutators_score: dict[str, float] = mutators_score or {}
         self.child: 'list[PromptNode]' = []
         self.level: int = 0 if parent is None else parent.level + 1

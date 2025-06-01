@@ -69,13 +69,13 @@ class UCBSelectPolicy(SelectPolicy):
             succ_num / len(all_prompt_nodes_list)
 
 class MCTSExploreSelectPolicy(SelectPolicy):
-    def __init__(self, questions: list[str], initial_prompt_nodes: list[PromptNode], ratio=0.5, alpha=0.1, beta=0.2):
+    def __init__(self, questions_used_number: int, initial_prompt_nodes: list[PromptNode], ratio=0.5, alpha=0.1, beta=0.2):
         super().__init__()
         self.step = 0
         self.mctc_select_path: 'list[PromptNode]' = []
         self.last_choice_index = None
         self.rewards = []
-        self.questions = questions
+        self.questions_used_number = questions_used_number
         self.initial_prompts_nodes = initial_prompt_nodes.copy()
         self.ratio = ratio  # balance between exploration and exploitation
         self.alpha = alpha  # penalty for level
@@ -124,7 +124,7 @@ class MCTSExploreSelectPolicy(SelectPolicy):
         if len(self.rewards) <= max_idx:
             self.rewards.extend([0] * (max_idx + 1 - len(self.rewards)))
         for prompt_node in reversed(self.mctc_select_path):
-            reward = succ_num / (len(self.questions) * len(prompt_nodes_to_update))
+            reward = succ_num / (self.questions_used_number * len(prompt_nodes_to_update))
             self.rewards[prompt_node.index] += reward * max(self.beta, (1 - 0.1 * last_choice_node.level))
 
 class EXP3SelectPolicy(SelectPolicy):
