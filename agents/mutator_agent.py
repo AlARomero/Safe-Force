@@ -22,7 +22,7 @@ def build_fuzzer_mutate_policy(model: LLM, temperature: float, energy: int, fall
             OpenAIMutatorGenerateSimilar(model, fallback_model, temperature, energy=energy),
             OpenAIMutatorRephrase(model, fallback_model, temperature, energy=energy),
             OpenAIMutatorShorten(model, fallback_model, temperature, energy=energy)
-        ], concatentate=True)
+        ], concatentate=False)
     elif isinstance(model, (OllamaLLM, LocalLLM)):
         return MutateRandomSinglePolicy([
             LocalMutatorCrossOver(model, temperature, energy),
@@ -30,7 +30,7 @@ def build_fuzzer_mutate_policy(model: LLM, temperature: float, energy: int, fall
             LocalMutatorGenerateSimilar(model, temperature, energy),
             LocalMutatorRephrase(model, temperature, energy),
             LocalMutatorShorten(model, temperature, energy)
-        ], concatentate=True)
+        ], concatentate=False)
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
 

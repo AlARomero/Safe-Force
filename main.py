@@ -67,7 +67,7 @@ def run(targets: list[str]) -> Optional[GraphState]:
         return final_state
     except Exception as e:
         logger.error("Error durante ejecución:\n" + traceback.format_exc())
-        logger.error(f"Estado final en la iteración {initial_state.strategist_agent.iteration}.")
+        logger.error(f"Estado final en la iteración {initial_state.strategist_agent.iterations}.")
         return None
 
 if __name__ == "__main__":
