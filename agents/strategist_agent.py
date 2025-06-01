@@ -17,7 +17,10 @@ class StrategistAgent:
         self.min_iterations = 15
         self.politica_seleccion_anterior: SelectPolicy = politica_seleccion
         self.temperature: float = 0.4
-        self.policy_registry: dict[str, dict[str, int]] = {}
+        self.policy_registry: dict[str, dict[str, float]] = {}
+        self.policy_history: list[str] = []
+        self.last_success_rate: float = 0.0
+        self.current_success_rate: float = 0.0
         self.model = get_llm(model_path, endpoint, api_key)
         self.selector_prompt = """            
             *** OBJECTIVE ***
@@ -101,6 +104,7 @@ class StrategistAgent:
             - iteration_results: model-wise count of successful jailbreaks: {{model_performance}}
             - current_policy: the name of the currently used policy: {{current_policy}}
             - current_iteration: current iteration number (starts at 1): {{current_iteration}}
+            - previous_success_rate: the success rate of the previous iteration: {{previous_success_rate}}
             *** END INPUT ***
 
             *** OUTPUT FORMAT INSTRUCTIONS ***
@@ -125,29 +129,32 @@ class StrategistAgent:
             should_continue = True
         return should_continue
 
-    def update_policy_registry(self, current_policy_name: str, iteration_results: dict[str, int]):
-        successes = sum(iteration_results.values())
+    def update_policy_registry(self, current_policy_name: str, iteration_results: dict[str, int], jailbreaks: int, queries: int):
+        success_rate = round(jailbreaks / queries,2) if queries > 0 else 0.0
         if current_policy_name in self.policy_registry:
             self.policy_registry[current_policy_name]["consecutive_iterations"] += 1
-            self.policy_registry[current_policy_name]["total_successes"] += successes
         else:
             self.policy_registry[current_policy_name] = {
                 "consecutive_iterations": 1,
-                "total_successes": successes
             }
+        self.policy_registry[current_policy_name]["success_rate"] = success_rate
         for policy_name in self.policy_registry:
             if policy_name != current_policy_name:
                 self.policy_registry[policy_name]["consecutive_iterations"] = 0
+        self.policy_history.append(current_policy_name)
+        self.last_success_rate = self.current_success_rate
+        self.current_success_rate = success_rate
 
     def new_selection_strategy(self, prompt_results: list[PromptNode],iteration_results: dict[str, int]):
         logger.debug(f"Política de selección anterior: {self.politica_seleccion_anterior.__class__.__name__}")
         seleccion: Union[_SelectorOutput, None]
         input_data = {
-            "policy_history": list(self.policy_registry.keys()),
+            "policy_history": self.policy_history,
             "policy_registry": self.policy_registry,
             "model_performance": iteration_results,
             "current_policy": self.politica_seleccion_anterior.__class__.__name__,
-            "current_iteration": self.iterations
+            "current_iteration": self.iterations,
+            "previous_success_rate": self.last_success_rate,
         }
         policy_history_str = json.dumps(input_data["policy_history"], indent=2)
         policy_registry_str = json.dumps(input_data["policy_registry"], indent=2)
@@ -159,7 +166,8 @@ class StrategistAgent:
                   .replace("{{policy_registry}}", policy_registry_str)
                   .replace("{{model_performance}}", model_performance_str)
                   .replace("{{current_policy}}", current_policy_str)
-                  .replace("{{current_iteration}}", current_iteration_str))
+                  .replace("{{current_iteration}}", current_iteration_str)
+                  .replace("{{previous_success_rate}}", str(self.last_success_rate)))
         try:
             raw_output = self.model.generate(agent_prompt, self.temperature)[0]
             logger.debug(f"Respuesta del modelo para la nueva política: {raw_output}")

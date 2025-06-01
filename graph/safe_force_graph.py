@@ -75,9 +75,10 @@ def strategist_node(state: GraphState) -> GraphState:
                 if model not in iteration_results:
                     iteration_results[model] = 0
                 iteration_results[model] += sum(outcomes)
-
         current_policy = state.last_policy_name or state.politica_seleccion.__class__.__name__
-        state.strategist_agent.update_policy_registry(current_policy, iteration_results)
+        current_jailbreaks = sum(p.num_jailbreak for p in state.results_generated)
+        current_queries = sum(p.num_query for p in state.results_generated)
+        state.strategist_agent.update_policy_registry(current_policy, iteration_results, current_jailbreaks, current_queries)
         nueva_politica = state.strategist_agent.new_selection_strategy(
             prompt_results=state.results_generated,
             iteration_results=iteration_results
@@ -88,7 +89,6 @@ def strategist_node(state: GraphState) -> GraphState:
         state.last_policy_name = type(nueva_politica).__name__
         state.last_policy_values = getattr(nueva_politica, 'config', {})
         state.politica_seleccion = nueva_politica
-
     return state
 
 def logger_node(state: GraphState):
