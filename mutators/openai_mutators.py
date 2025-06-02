@@ -35,10 +35,10 @@ class OpenAIMutatorBase(Mutator):
         response = self.model.generate(seed, self.temperature, self.max_tokens, self.n, self.max_trials, self.failure_sleep_time)
 
         response = [x for x in response if x is not None and x != " "]
-        self.logger.info(f"{len(response)}/{self.n} templates generados con mutacion correctamente")
+        self.logger.info(f"{len(response)}/{self.n} templates generados con mutación correctamente")
         diff = self.n - len(response)
         if diff > 0:
-            self.logger.warning(f"Han fallado {diff} peticiones de mutacion, mutando con el modelo fallback")
+            self.logger.warning(f"Han fallado {diff} peticiones de mutación, mutando con el modelo fallback")
             response.extend(self.fallback_mutator_model.generate(seed, self.temperature, self.max_tokens, n = diff))
 
 
