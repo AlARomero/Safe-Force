@@ -58,7 +58,7 @@ def run(targets: list[str]) -> Optional[GraphState]:
         raise
     logger.info("Iniciando fuzzing.")
     try:
-        result_dict = grafo.invoke(vars(initial_state), {"recursion_limit": 100})
+        result_dict = grafo.invoke(vars(initial_state), {"recursion_limit": 450})
         logger.info("Condiciones de parada alcanzadas. Finalizando ejecución.")
         final_state = GraphState.from_dict(result_dict)
         logger.info("Ejecución completada exitosamente.")
