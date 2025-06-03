@@ -10,13 +10,13 @@ logger = get_basic_logger(__name__)
 
 class StrategistAgent:
     # TODO Podria elegir la temperatura del mismo. Tambien podria indicar si hay que terminar el proceso o no
-    def __init__(self, politica_seleccion: SelectPolicy, model_path: str = "azure/gpt-4-TFM", endpoint: str = None, api_key: str = None, questions: list[str] = None):
+    def __init__(self, politica_seleccion: SelectPolicy, max_iterations: int = 55, model_path: str = "azure/gpt-4-TFM",
+                 temperature: float = 0.1, endpoint: str = None, api_key: str = None, questions: list[str] = None):
         self.questions: list[str] = questions
         self.iterations: int = 0
-        self.max_iterations = 50
-        self.min_iterations = 15
+        self.max_iterations = max_iterations
         self.politica_seleccion_anterior: SelectPolicy = politica_seleccion
-        self.temperature: float = 0.4
+        self.temperature: float = temperature
         self.policy_registry: dict[str, dict[str, list[float]]] = {}
         self.policy_history: list[str] = []
         self.last_success_rate: float = 0.0
