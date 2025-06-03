@@ -75,7 +75,7 @@ def strategist_node(state: GraphState) -> GraphState:
                 if model not in iteration_results:
                     iteration_results[model] = 0
                 iteration_results[model] += sum(outcomes)
-        current_policy = state.last_policy_name or state.politica_seleccion.__class__.__name__
+        current_policy = state.politica_seleccion.__class__.__name__
         current_jailbreaks = sum(p.num_jailbreak for p in state.results_generated)
         current_queries = sum(p.num_query for p in state.results_generated)
         state.strategist_agent.update_policy_registry(current_policy, iteration_results, current_jailbreaks, current_queries)
@@ -84,10 +84,6 @@ def strategist_node(state: GraphState) -> GraphState:
             iteration_results=iteration_results
         )
         state.logger.info(f"Política para la siguiente iteración de tipo {type(nueva_politica).__name__}.")
-        state.recent_policies.append(type(nueva_politica).__name__)
-        state.recent_policy_configs.append(getattr(nueva_politica, 'config', {}))
-        state.last_policy_name = type(nueva_politica).__name__
-        state.last_policy_values = getattr(nueva_politica, 'config', {})
         state.politica_seleccion = nueva_politica
     return state
 
@@ -98,12 +94,6 @@ def logger_node(state: GraphState):
     current_jailbreaks = sum(p.num_jailbreak for p in state.results_generated)
     current_rejections = sum(p.num_reject for p in state.results_generated)
     current_queries = sum(p.num_query for p in state.results_generated)
-    state.success_ratio_last = state.success_ratio_current
-    state.success_ratio_current = current_jailbreaks / max(current_queries, 1)
-    state.success_last_iteration = state.success_current_iteration
-    state.success_current_iteration = current_jailbreaks
-    state.jailbreak_history.append(current_jailbreaks)
-    state.rejection_history.append(current_rejections)
     state.logger.info(f"[Iteración: {state.strategist_agent.iterations}] | Jailbreaks en esta iteración: {current_jailbreaks}/{current_queries}. | Rechazos en esta iteración: {current_rejections}")
 
 def write_file(file: str, results_generated: list[PromptNode], selection_policy: str, new: bool = False):
