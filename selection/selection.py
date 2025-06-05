@@ -119,11 +119,10 @@ class MCTSExploreSelectPolicy(SelectPolicy):
         if pos is None:
             return
         last_choice_node = all_prompt_nodes_list[pos]
-        #last_choice_node = all_prompt_nodes_list[self.last_choice_index]
         max_idx = max(pn.index for pn in self.mctc_select_path + [last_choice_node])
         if len(self.rewards) <= max_idx:
             self.rewards.extend([0] * (max_idx + 1 - len(self.rewards)))
-        question_count = len(self.questions)
+        question_count = self.questions_used_number
         update_count = len(prompt_nodes_to_update)
         if question_count == 0 or update_count == 0:
             reward = 0
