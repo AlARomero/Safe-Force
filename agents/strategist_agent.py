@@ -5,6 +5,7 @@ from graph.prompt_node import PromptNode
 from selection.selection import SelectPolicy, RoundRobinSelectPolicy, RandomSelectPolicy, UCBSelectPolicy, MCTSExploreSelectPolicy, EXP3SelectPolicy
 from utils.llm_utils import get_llm
 from utils.logger import get_basic_logger
+
 logger = get_basic_logger(__name__)
 
 
@@ -151,7 +152,6 @@ class StrategistAgent:
             self.current_iteration_model_stats[model]["rate"] = round(j / q, 2) if q > 0 else 0.0
             total_jailbreaks += j
             total_queries += q
-
         success_rate = round(jailbreaks / queries, 2) if queries > 0 else 0.0
         if current_policy_name in self.policy_registry:
             self.policy_registry[current_policy_name]["consecutive_iterations"] += 1
@@ -164,7 +164,6 @@ class StrategistAgent:
         for policy_name in self.policy_registry:
             if policy_name != current_policy_name:
                 self.policy_registry[policy_name]["consecutive_iterations"] = 0
-
         self.policy_history.append(current_policy_name)
         self.last_success_rate = self.current_success_rate
         self.current_success_rate = success_rate
@@ -201,7 +200,7 @@ class StrategistAgent:
             logger.error(f"Error al generar o parsear la nueva política de selección: {e}")
             seleccion = None
         if seleccion is not None:
-            nueva_politica = seleccion.map_selector_policy(self.politica_seleccion_anterior, prompt_results, self.questions)
+            nueva_politica = seleccion.map_selector_policy(self.politica_seleccion_anterior, prompt_results, self.questions_used_number)
             self.politica_seleccion_anterior = nueva_politica
             return nueva_politica
         logger.debug("No se ha producido un cambio de política. Se mantiene la anterior.")
@@ -213,7 +212,7 @@ class _SelectorOutput(BaseModel):
     values: Dict[str, Any]
     explanation: str
 
-    def map_selector_policy(self, previous_policy: SelectPolicy, prompt_nodes: list[PromptNode], questions: list[str]) -> SelectPolicy:
+    def map_selector_policy(self, previous_policy: SelectPolicy, prompt_nodes: list[PromptNode], questions_used_number: int) -> SelectPolicy:
         if self.policy is None or self.policy.lower() in ["same", "none", ""]:
             return previous_policy
         else:
@@ -221,7 +220,7 @@ class _SelectorOutput(BaseModel):
                 "RoundRobinSelectPolicy": RoundRobinSelectPolicy(),
                 "RandomSelectPolicy": RandomSelectPolicy(),
                 "UCBSelectPolicy": UCBSelectPolicy(prompt_nodes, self.values.get("explore_coeff", 1.0)),
-                "MCTSExploreSelectPolicy": MCTSExploreSelectPolicy(questions, prompt_nodes, self.values.get("ratio", 0.5), self.values.get("alpha", 0.1), self.values.get("beta", 0.2)),
+                "MCTSExploreSelectPolicy": MCTSExploreSelectPolicy(questions_used_number, prompt_nodes, self.values.get("ratio", 0.5), self.values.get("alpha", 0.1), self.values.get("beta", 0.2)),
                 "EXP3SelectPolicy": EXP3SelectPolicy(prompt_nodes, self.values.get("gamma", 0.05), self.values.get("alpha", 25))
             }
             return mapa[self.policy]
