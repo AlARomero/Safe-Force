@@ -41,7 +41,7 @@ def run(targets: list[str]) -> Optional[GraphState]:
         results_generated = [],
         result_file = config.RESULT_FILE_PATH,
         generated = 0,
-        strategist_agent = StrategistAgent(politica_seleccion, max_iterations, strategist_model_path, strategist_temperature, strategist_model_endpoint, strategist_model_api_key, questions),
+        strategist_agent = StrategistAgent(politica_seleccion, questions_used_number, max_iterations, strategist_model_path, strategist_temperature, strategist_model_endpoint, strategist_model_api_key),
         predictor_agent = PredictorAgent(predictor_model_path, config.DEVICE),
         mutator_agent = MutatorAgent(mutators_default_score, mutator_model_path, fallback_mutator_model_path, mutator_temperature, energy),
         evaluator_agent = EvaluatorAgent(targets, all_questions, questions_used_number),
