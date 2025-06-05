@@ -44,7 +44,7 @@ def get_seed_prompt_node(state: GraphState) -> GraphState:
         return state
     state.active_seed = state.politica_seleccion.select(state.actual_list_seeds)
     if state.active_seed:
-        state.logger.info(f"Semilla seleccionada: {state.active_seed.prompt[:300]}...")
+        state.logger.info(f"Semilla seleccionada: {state.active_seed.prompt[:450]}...")
     else:
         state.logger.error("❌ No se pudo seleccionar una semilla válida.")
         state.should_continue = False
@@ -65,21 +65,20 @@ def selector_node(state: GraphState) -> GraphState:
     state.politica_seleccion.update(selected, state.actual_list_seeds) # Actualiza la politica de seleccion
     return state
 
+
 def strategist_node(state: GraphState) -> GraphState:
     state.logger.info("🔁 | STRATEGIST: Revisión de estrategia de fuzzing y cambio de política.")
     state.should_continue = state.strategist_agent.continue_choice(state.results_generated)
     if state.should_continue:
-        # TODO En base a que metemos una nueva politica de seleccion
-        nueva_politica = state.strategist_agent.new_selection_strategy(state.results_generated, state.last_policy_name, state.success_last_iteration, state.success_current_iteration, state.jailbreak_history, state.recent_policies, state.success_ratio_last, state.success_ratio_current, state.rejection_history)
-        state.logger.info(f"Politica para la siguiente iteracion de tipo {type(nueva_politica).__name__}.")
-        policy_name = type(nueva_politica).__name__
-        state.recent_policies.append(policy_name)
-        state.recent_policies = state.recent_policies[-5:]
-        policy_config = getattr(nueva_politica, 'config', {})
-        state.recent_policy_configs.append(policy_config)
-        state.recent_policy_configs = state.recent_policy_configs[-5:]
-        state.last_policy_name = policy_name
-        state.last_policy_values = policy_config
+        current_policy = state.politica_seleccion.__class__.__name__
+        current_jailbreaks = sum(p.num_jailbreak for p in state.results_generated)
+        current_queries = sum(p.num_query for p in state.results_generated)
+        prompt_nodes = state.results_generated
+        state.strategist_agent.update_policy_registry(prompt_nodes, current_policy, current_jailbreaks, current_queries)
+        nueva_politica = state.strategist_agent.new_selection_strategy(
+            prompt_results=state.results_generated,
+        )
+        state.logger.info(f"Política para la siguiente iteración de tipo {type(nueva_politica).__name__}.")
         state.politica_seleccion = nueva_politica
     return state
 
@@ -90,13 +89,7 @@ def logger_node(state: GraphState):
     current_jailbreaks = sum(p.num_jailbreak for p in state.results_generated)
     current_rejections = sum(p.num_reject for p in state.results_generated)
     current_queries = sum(p.num_query for p in state.results_generated)
-    state.success_ratio_last = state.success_ratio_current
-    state.success_ratio_current = current_jailbreaks / max(current_queries, 1)
-    state.success_last_iteration = state.success_current_iteration
-    state.success_current_iteration = current_jailbreaks
-    state.jailbreak_history.append(current_jailbreaks)
-    state.rejection_history.append(current_rejections)
-    state.logger.info(f"[Iteración: {state.strategist_agent.iteration}] | Jailbreaks en esta iteración: {current_jailbreaks}/{current_queries}. | Rechazos en esta iteración: {current_rejections}")
+    state.logger.info(f"[Iteración: {state.strategist_agent.iterations}] | Jailbreaks en esta iteración: {current_jailbreaks}/{current_queries}. | Rechazos en esta iteración: {current_rejections}")
 
 def write_file(file: str, results_generated: list[PromptNode], selection_policy: str, new: bool = False):
     mode = 'w' if new else 'a'

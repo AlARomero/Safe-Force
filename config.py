@@ -12,6 +12,9 @@ TARGETS: list[str] = os.getenv("TARGETS").split("|") if os.getenv("TARGETS") els
 
 LOG_FILE_PATH = f"logs/log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
 RESULT_FILE_PATH = f"results/results_{datetime.datetime.now().strftime('%d%m%Y%H%M%S')}.csv"
+STRATEGIST_TEMPERATURE: float = float(os.getenv("STRATEGIST_TEMPERATURE"))
+MAX_ITERATIONS: int = int(os.getenv("MAX_ITERATIONS"))
+ENERGY: int = int(os.getenv("ENERGY"))
 POSSIBLE_MUTATORS: list[str] = os.getenv("POSSIBLE_MUTATORS").split("|") if os.getenv("POSSIBLE_MUTATORS") else []
 QUESTIONS_USED_NUMBER: int = int(os.getenv("QUESTIONS_USED_NUMBER"))
 QUESTIONS: list[str] = [

@@ -3,7 +3,6 @@ from argparse import ArgumentError
 import streamlit as st
 import pandas as pd
 import time
-
 import config
 from main import run as run_graph
 from utils.charts import total_chart_plot, percentage_chart_plot

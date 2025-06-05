@@ -123,8 +123,13 @@ class MCTSExploreSelectPolicy(SelectPolicy):
         max_idx = max(pn.index for pn in self.mctc_select_path + [last_choice_node])
         if len(self.rewards) <= max_idx:
             self.rewards.extend([0] * (max_idx + 1 - len(self.rewards)))
+        question_count = len(self.questions)
+        update_count = len(prompt_nodes_to_update)
+        if question_count == 0 or update_count == 0:
+            reward = 0
+        else:
+            reward = succ_num / (question_count * update_count)
         for prompt_node in reversed(self.mctc_select_path):
-            reward = succ_num / (self.questions_used_number * len(prompt_nodes_to_update))
             self.rewards[prompt_node.index] += reward * max(self.beta, (1 - 0.1 * last_choice_node.level))
 
 class EXP3SelectPolicy(SelectPolicy):

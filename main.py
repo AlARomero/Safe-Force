@@ -18,11 +18,13 @@ def run(targets: list[str]) -> Optional[GraphState]:
     strategist_model_path: str = "azure/gpt-4-TFM"
     strategist_model_endpoint: str = config.AZURE_OPENAI_ENDPOINT
     strategist_model_api_key: str = config.AZURE_OPENAI_API_KEY
+    strategist_temperature: float = config.STRATEGIST_TEMPERATURE
     predictor_model_path: str = "hubert233/GPTFuzz"
     mutator_model_path: str = "azure/gpt-4-TFM"
     fallback_mutator_model_path: str = "ollama/llama3:8b"
     mutator_temperature: float = 0.4
-    energy = 5
+    energy = config.ENERGY
+    max_iterations: int = config.MAX_ITERATIONS
     mutators_default_score = initialize_mutators_score(config.POSSIBLE_MUTATORS)
     politica_seleccion: SelectPolicy = RoundRobinSelectPolicy()
     questions_used_number = config.QUESTIONS_USED_NUMBER
@@ -39,7 +41,7 @@ def run(targets: list[str]) -> Optional[GraphState]:
         results_generated = [],
         result_file = config.RESULT_FILE_PATH,
         generated = 0,
-        strategist_agent = StrategistAgent(politica_seleccion, questions_used_number, strategist_model_path, strategist_model_endpoint, strategist_model_api_key),
+        strategist_agent = StrategistAgent(politica_seleccion, max_iterations, strategist_model_path, strategist_temperature, strategist_model_endpoint, strategist_model_api_key, questions),
         predictor_agent = PredictorAgent(predictor_model_path, config.DEVICE),
         mutator_agent = MutatorAgent(mutators_default_score, mutator_model_path, fallback_mutator_model_path, mutator_temperature, energy),
         evaluator_agent = EvaluatorAgent(targets, all_questions, questions_used_number),
@@ -66,8 +68,7 @@ def run(targets: list[str]) -> Optional[GraphState]:
         logger.info(f"Resumen final - Iteraciones: {final_state.strategist_agent.iteration} | Jailbreaks totales: {total_jailbreaks}. | Rechazos en esta iteración: {total_rejections}. | Respuestas totales: {total_generated_prompts}.")
         return final_state
     except Exception as e:
-        logger.error("Error durante ejecución:\n" + traceback.format_exc())
-        logger.error(f"Estado final en la iteración {initial_state.strategist_agent.iteration}.")
+        logger.error(f"Error durante ejecución:\n{traceback.format_exc()}\nEstado final en la iteración {initial_state.strategist_agent.iterations}.")
         return None
 
 if __name__ == "__main__":
