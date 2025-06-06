@@ -65,7 +65,7 @@ def run(targets: list[str]) -> Optional[GraphState]:
         total_jailbreaks = sum(p.num_jailbreak for p in final_state.results_generated)
         total_generated_prompts = sum(p.num_query for p in final_state.results_generated)
         total_rejections = sum(p.num_reject for p in final_state.results_generated)
-        logger.info(f"Resumen final - Iteraciones: {final_state.strategist_agent.iteration} | Jailbreaks totales: {total_jailbreaks}. | Rechazos en esta iteración: {total_rejections}. | Respuestas totales: {total_generated_prompts}.")
+        logger.info(f"Resumen final - Iteraciones: {final_state.strategist_agent.iterations} | Jailbreaks totales: {total_jailbreaks}. | Rechazos en esta iteración: {total_rejections}. | Respuestas totales: {total_generated_prompts}.")
         return final_state
     except Exception as e:
         logger.error(f"Error durante ejecución:\n{traceback.format_exc()}\nEstado final en la iteración {initial_state.strategist_agent.iterations}.")

@@ -103,7 +103,7 @@ class MutatorAgent:
                       .replace("{MUTATOR}", seed.mutator.__class__.__name__)
                       .replace("{PARENT_LINE}", parent_line_str)
                       .replace("{REJECTS}", str(seed.num_reject)))
-            return  self.model.generate(prompt, 0, 1024)[0].replace("```json", "").replace("```", "")
+            return  self.model.generate(prompt, 0, 2048)[0].replace("```json", "").replace("```", "")
         return ""
 
     def update_mutators_score(self, seed: PromptNode):

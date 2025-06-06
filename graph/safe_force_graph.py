@@ -70,12 +70,8 @@ def strategist_node(state: GraphState) -> GraphState:
     state.logger.info("🔁 | STRATEGIST: Revisión de estrategia de fuzzing y cambio de política.")
     state.should_continue = state.strategist_agent.continue_choice(state.results_generated)
     if state.should_continue:
-        current_policy = state.politica_seleccion.__class__.__name__
-        current_jailbreaks = sum(p.num_jailbreak for p in state.results_generated)
-        current_queries = sum(p.num_query for p in state.results_generated)
-        prompt_nodes = state.results_generated
-        state.strategist_agent.update_policy_registry(prompt_nodes, current_policy, current_jailbreaks, current_queries)
         nueva_politica = state.strategist_agent.new_selection_strategy(
+            prompt_nodes=state.actual_list_seeds,
             prompt_results=state.results_generated,
         )
         state.logger.info(f"Política para la siguiente iteración de tipo {type(nueva_politica).__name__}.")
