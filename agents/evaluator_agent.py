@@ -22,7 +22,7 @@ class EvaluatorAgent:
                 target = next(model for model in self.targets if model.model_path == model_path)
                 for message in synthetic_questions:
                     if message is None:
-                        self.logger.warning(f"Mensaje Nulo! Prompt {prompt_node.index} posiblemente invalido")
+                        self.logger.warning(f"Mensaje Nulo. Prompt {prompt_node.index} posiblemente inválido.")
                         prompt_node.response = []
                         prompt_node.results = []
                         break

@@ -25,16 +25,6 @@ class GraphState:
     energy: int # Numero de mutaciones a realizar por tirada
     should_continue: bool # Indica si se deben hacer más iteraciones
     logger: Logger # Logger con el que se mostrara por consola toda la informacion
-    jailbreak_history: list[int] = field(default_factory=list)
-    rejection_history: list[int] = field(default_factory=list)
-    last_policy_name: Optional[str] = None
-    last_policy_values: Optional[dict] = field(default_factory=dict)
-    recent_policies: list[str] = field(default_factory=list)
-    recent_policy_configs: list[dict] = field(default_factory=list)
-    success_ratio_current: float = 0.0
-    success_ratio_last: float = 0.0
-    success_current_iteration: int = 0
-    success_last_iteration: int = 0
 
     @classmethod
     def from_dict(cls, data: dict):

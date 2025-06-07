@@ -355,7 +355,7 @@ class AzureOpenAILLM(LLM):
         self.system_message = system_message if system_message is not None else "You are a helpful assistant."
 
     def generate(self, prompt, temperature=0, max_tokens=512, n=1, max_trials=10, failure_sleep_time=5):
-        self.logger.debug("Generating")
+        self.logger.debug("Generando")
         for _ in range(max_trials):
             try:
                 results = self.client.chat.completions.create(
@@ -368,7 +368,7 @@ class AzureOpenAILLM(LLM):
                     max_tokens=max_tokens,
                     n=n,
                 )
-                self.logger.debug("Generated")
+                self.logger.debug("Generado")
                 results = [results.choices[i].message.content for i in range(n)]
                 results = [result if result is not None else " " for result in results]
                 return results

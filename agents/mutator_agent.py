@@ -122,14 +122,14 @@ class MutatorAgent:
                 self.logger.debug(f"NODE LEVEL: {node.level} \n WEIGHTS: {str(node.mutators_score)}")
                 node = node.parent
             else:
-                self.logger.warning(f"Nivel del nodo no coincide para actualizar pesos de mutadores!\n SORT: {sort}\nSEED: {str(seed.level)}")
+                self.logger.warning(f"Nivel del nodo no coincide para actualizar pesos de mutadores.\n SORT: {sort}\nSEED: {str(seed.level)}")
 
     def mutate(self, seed: PromptNode, from_prompts: list[PromptNode]):
         self.update_mutators_score(seed)
 
         mutator_choice: str = get_mutator_by_weight(seed)
         if mutator_choice == "":
-            self.logger.error("Fallo al obtener mutador por el peso del mismo, escogiendo mutador aleatorio")
+            self.logger.error("Fallo al obtener mutador por el peso del mismo, escogiendo mutador aleatorio.")
             mutator_choice = random.choice(list(self.mutators_default_score.keys()))
 
         mutator: Mutator = build_mutator(mutator_choice, self.model, self.temperature, self.energy, self.fallback_model)

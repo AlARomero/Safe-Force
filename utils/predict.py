@@ -9,7 +9,7 @@ class Predictor:
         self.path = path
 
     def predict(self, sequences):
-        raise NotImplementedError("Predictor must implement predict method.")
+        raise NotImplementedError("Predictor debe implementar un método de predicción.")
 
 
 class RoBERTaPredictor(Predictor):
@@ -23,7 +23,7 @@ class RoBERTaPredictor(Predictor):
 
     def predict(self, sequences: list):
         if len(sequences) == 0:
-            self.logger.warning("Intentando predecir secuencias vacias")
+            self.logger.warning("Intentando predecir secuencias vacías.")
             return []
         inputs = self.tokenizer(sequences, padding=True, truncation=True,
                                 max_length=512, return_tensors="pt").to(self.device)
