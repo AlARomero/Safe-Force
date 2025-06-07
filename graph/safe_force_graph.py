@@ -30,7 +30,7 @@ def classifier_node(state: GraphState) -> GraphState:
         for model, responses in prompt.response:
             predictions = state.predictor_agent.predict(responses if isinstance(responses, list) else [responses])
             if len(predictions) == 0:
-                state.logger.warning("Longitud de predicciones 0, procediendo a setear valores en jailbreak fallido")
+                state.logger.warning("Longitud de predicciones 0, procediendo a configurar valores en jailbreak fallido.")
                 prompt.results.append((model, [0 for _ in prompt.questions]))
             else:
                 prompt.results.append((model, predictions))
