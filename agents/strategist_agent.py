@@ -131,7 +131,6 @@ LAST_ITERATION_MODEL_STATS: {{last_iteration_model_stats}}
 POLICY_REGISTRY: {{policy_registry}}
 """
 
-    #If the result is to keep the actual policy, "policy" output value should be 'same'
     def continue_choice(self, generated: list[PromptNode]) -> bool:
         self.iterations += 1
         stop_conditions = [self.iterations >= self.max_iterations, len(generated) <= 0]
