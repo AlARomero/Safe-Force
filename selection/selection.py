@@ -63,10 +63,10 @@ class UCBSelectPolicy(SelectPolicy):
         return prompt_nodes[self.last_choice_index]
 
     def update(self, prompt_nodes_to_update: 'list[PromptNode]', all_prompt_nodes_list: list[PromptNode]):
-        succ_num = sum([prompt_node.num_jailbreak
-                        for prompt_node in prompt_nodes_to_update])
-        self.rewards[self.last_choice_index] += \
-            succ_num / len(all_prompt_nodes_list)
+        if not all_prompt_nodes_list:
+            return
+        succ_num = sum([prompt_node.num_jailbreak for prompt_node in prompt_nodes_to_update])
+        self.rewards[self.last_choice_index] += succ_num / len(all_prompt_nodes_list)
 
 class MCTSExploreSelectPolicy(SelectPolicy):
     def __init__(self, questions_used_number: int, initial_prompt_nodes: list[PromptNode], ratio=0.5, alpha=0.1, beta=0.2):
@@ -159,9 +159,11 @@ class EXP3SelectPolicy(SelectPolicy):
         return prompt_nodes[self.last_choice_index]
 
     def update(self, prompt_nodes_to_update: 'list[PromptNode]', all_prompt_nodes_list: list[PromptNode]):
-        succ_num = sum([prompt_node.num_jailbreak
-                        for prompt_node in prompt_nodes_to_update])
+        if not prompt_nodes_to_update:
+            return
+        succ_num = sum([prompt_node.num_jailbreak for prompt_node in prompt_nodes_to_update])
         r = 1 - succ_num / len(prompt_nodes_to_update)
+        if self.probs[self.last_choice_index] == 0:
+            return
         x = -1 * r / self.probs[self.last_choice_index]
-        self.weights[self.last_choice_index] *= np.exp(
-            self.alpha * x / len(all_prompt_nodes_list))
+        self.weights[self.last_choice_index] *= np.exp(self.alpha * x / len(all_prompt_nodes_list))
