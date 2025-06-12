@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+OLLAMA_HOST: str = os.getenv("OLLAMA_HOST")
 AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY")
 DEVICE: str = os.getenv("DEVICE")
 AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")
