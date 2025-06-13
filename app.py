@@ -2,38 +2,14 @@ from argparse import ArgumentError
 import streamlit as st
 import pandas as pd
 import time
-import requests
-import json
 import config
+import ollama
 from main import run as run_graph
 from utils.charts import total_chart_plot, percentage_chart_plot
 
-def pull_model(model_name: str):
-    url = f"{config.OLLAMA_HOST}/api/pull"
-    data = {"name": model_name}
-    try:
-        response = requests.post(url, json=data)
-        response.raise_for_status()
-        for line in response.text.strip().splitlines():
-            status = json.loads(line)
-            if status.get("status") == "completed" or status.get("status") == "success":
-                return True
-            if status.get("status") == "error":
-                return False
-        return False
-    except requests.RequestException:
-        return False
-
 @st.cache_data
 def get_local_models():
-    url = f"{config.OLLAMA_HOST}/api/tags"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-        return ["ollama/" + model['name'] for model in data.get('models', [])]
-    except requests.RequestException as e:
-        return []
+    return [f"ollama/{model['model']}" for model in ollama.list()["models"]]
 
 def app():
     st.set_page_config(page_title="Safe-Force", page_icon="🛡️", layout="wide")
@@ -93,8 +69,9 @@ def app():
                     st.write("🔎 Detectados modelos Ollama")
                     for modelo in [algoritmo for algoritmo in st.session_state.algoritmos if algoritmo.__contains__("ollama/")]:
                         st.write(f"📥 Instalando {modelo}")
-                        verificacion = pull_model(modelo.split("ollama/")[1])
-                        if not verificacion:
+                        try:
+                            ollama.pull(modelo.split("ollama/")[1])
+                        except:
                             st.write(f"❌ Ha ocurrido un error durante la descarga del modelo {modelo}")
                             time.sleep(0.5)
                             st.session_state.done = False
