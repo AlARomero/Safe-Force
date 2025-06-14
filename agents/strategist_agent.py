@@ -85,7 +85,7 @@ Respond with a single valid JSON object only. Do not include explanations outsid
 markdown.
 The JSON must match the following schema exactly:
 {
-    "policy": <Policy Selected)>, # If you want to keep the policy, value should be 'same'. if not, value should be the name of the new policy o the actual policy if changing the parameters
+    "policy": <Policy Selected>, # If you want to keep the policy, value should be 'same'. if not, value should be the name of the new policy o the actual policy if changing the parameters
     "parameters": <Json of the parameters needed>
     "explanation": <Brief explanation of why did you choose that new type of policy>
 }

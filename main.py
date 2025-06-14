@@ -30,8 +30,7 @@ def run(targets: list[str]) -> Optional[GraphState]:
     questions_used_number = config.QUESTIONS_USED_NUMBER
     all_questions: list[str] = config.QUESTIONS
     write_file(config.RESULT_FILE_PATH, [], politica_seleccion.__class__.__name__, True)
-    prompts_strings: list[str] = config.PROMPT_TEMPLATES
-    nodes: list[PromptNode] = [PromptNode(prompt, index=i, mutators_score=mutators_default_score.copy()) for i, prompt in enumerate(prompts_strings)]
+    nodes: list[PromptNode] = [PromptNode(prompt["prompt_text"], prompt["prompt_type"], index=i, mutators_score=mutators_default_score.copy()) for i, prompt in enumerate(config.PROMPT_TEMPLATES)]
     initial_state = GraphState(
         initial_seeds = nodes,
         actual_list_seeds = nodes.copy(),

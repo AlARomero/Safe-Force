@@ -19,13 +19,13 @@ POSSIBLE_MUTATORS: list[str] = os.getenv("POSSIBLE_MUTATORS").split("|") if os.g
 QUESTIONS_USED_NUMBER: int = int(os.getenv("QUESTIONS_USED_NUMBER"))
 QUESTIONS_FILE = os.getenv("QUESTIONS_FILE")
 PROMPT_TEMPLATES_FILE = os.getenv("PROMPT_TEMPLATES_FILE")
-PROMPT_TEMPLATES: list[str] = []
+PROMPT_TEMPLATES: list[dict[str, str]] = []
 QUESTIONS: list[str] = []
 
 if PROMPT_TEMPLATES_FILE:
     with open(PROMPT_TEMPLATES_FILE, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
-        PROMPT_TEMPLATES = [row["text"] for row in reader if "text" in row and row["text"].strip()]
+        PROMPT_TEMPLATES = [{"prompt_text": row["text"], "prompt_type": row["type"]} for row in reader if "text" in row and row["text"].strip()]
 
 if QUESTIONS_FILE:
     with open(QUESTIONS_FILE, newline='', encoding='utf-8') as csvfile:

@@ -1535,6 +1535,18 @@ snappy = ["cramjam"]
 zstandard = ["zstandard"]
 
 [[package]]
+name = "fastchat"
+version = "0.1.0"
+description = "fastchat with guidance support"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "fastchat-0.1.0-py3-none-any.whl", hash = "sha256:7c5363426b8fa384a0cf3f88e6a0593bc4ec011fb551d52d569157deafc948f1"},
+    {file = "fastchat-0.1.0.tar.gz", hash = "sha256:e7032049850ce2c7a5db2a09f130931d8bb8ca3797dad6ff4c8010db986fd1c2"},
+]
+
+[[package]]
 name = "fastjsonschema"
 version = "2.21.1"
 description = "Fastest Python implementation of JSON schema"
@@ -8947,4 +8959,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "6bb268b03df1cb07c4305ee97a7c29ce4fc530b0a22e0e7131fcdb1e9f1842fb"
+content-hash = "273fb981bf509442cab5ff56cb21af26f140984766c06d4ca7ce4b45e7286bc6"

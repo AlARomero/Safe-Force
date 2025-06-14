@@ -135,7 +135,7 @@ class MutatorAgent:
         mutator: Mutator = build_mutator(mutator_choice, self.model, self.temperature, self.energy, self.fallback_model)
 
         results: list[str] = mutator.mutate_single(seed.prompt, from_prompts)
-        mutated_prompts: list[PromptNode] = [PromptNode(result, parent=seed, mutator=mutator, mutators_score=self.mutators_default_score.copy()) for result in results]
+        mutated_prompts: list[PromptNode] = [PromptNode(result, seed.prompt_type, parent=seed, mutator=mutator, mutators_score=self.mutators_default_score.copy()) for result in results]
         seed.child.extend(mutated_prompts)
 
         return mutated_prompts
