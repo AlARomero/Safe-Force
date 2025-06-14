@@ -10,8 +10,17 @@ AZURE_OPENAI_API_KEY: str = os.getenv("AZURE_OPENAI_API_KEY")
 DEVICE: str = os.getenv("DEVICE")
 AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")
 TARGETS: list[str] = os.getenv("TARGETS").split("|") if os.getenv("TARGETS") else []
-LOG_FILE_PATH = f"logs/log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
-RESULT_FILE_PATH = f"results/results_{datetime.datetime.now().strftime('%d%m%Y%H%M%S')}.csv"
+
+LOGS_PATH = "./logs"
+if not os.path.exists(LOGS_PATH):
+    os.makedirs(LOGS_PATH)
+LOG_FILE_PATH = f"{LOGS_PATH}/log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+
+RESULTS_PATH = "./results"
+if not os.path.exists(RESULTS_PATH):
+    os.makedirs(RESULTS_PATH)
+RESULT_FILE_PATH = f"{RESULTS_PATH}/results_{datetime.datetime.now().strftime('%d%m%Y%H%M%S')}.csv"
+
 STRATEGIST_TEMPERATURE: float = float(os.getenv("STRATEGIST_TEMPERATURE"))
 MAX_ITERATIONS: int = int(os.getenv("MAX_ITERATIONS"))
 ENERGY: int = int(os.getenv("ENERGY"))
