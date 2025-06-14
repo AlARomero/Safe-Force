@@ -25,7 +25,7 @@ QUESTIONS: list[str] = []
 if PROMPT_TEMPLATES_FILE:
     with open(PROMPT_TEMPLATES_FILE, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
-        PROMPT_TEMPLATES = [{"prompt_text": row["text"], "prompt_type": row["type"]} for row in reader if "text" in row and row["text"].strip()]
+        PROMPT_TEMPLATES = [{"prompt_text": row["text"], "prompt_type": row["clasificacion"]} for row in reader if "text" in row and row["text"].strip()]
 
 if QUESTIONS_FILE:
     with open(QUESTIONS_FILE, newline='', encoding='utf-8') as csvfile:
