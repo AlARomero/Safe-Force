@@ -27,7 +27,7 @@ services:
       test: ["CMD-SHELL", "/app/ollama_healthcheck.sh"]
       interval: 10s
       timeout: 3s
-      retries: 120
+      retries: 240
 
 networks:
   app_network:
