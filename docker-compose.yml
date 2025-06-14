@@ -25,9 +25,9 @@ services:
         ipv4_address: 172.16.238.2
     healthcheck:
       test: ["CMD-SHELL", "/app/ollama_healthcheck.sh"]
-      interval: 10s         # Reintenta cada 10 segundos
-      timeout: 3s           # Espera hasta 3s por intento
-      retries: 120           # Espera hasta 20 minutos (10s * 120)
+      interval: 10s
+      timeout: 3s
+      retries: 120
 
 networks:
   app_network:
