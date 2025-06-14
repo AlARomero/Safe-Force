@@ -11,12 +11,12 @@ DEVICE: str = os.getenv("DEVICE")
 AZURE_OPENAI_ENDPOINT: str = os.getenv("AZURE_OPENAI_ENDPOINT")
 TARGETS: list[str] = os.getenv("TARGETS").split("|") if os.getenv("TARGETS") else []
 
-LOGS_PATH = "./logs"
+LOGS_PATH = os.getenv("LOGS_PATH")
 if not os.path.exists(LOGS_PATH):
     os.makedirs(LOGS_PATH)
 LOG_FILE_PATH = f"{LOGS_PATH}/log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
 
-RESULTS_PATH = "./results"
+RESULTS_PATH = os.getenv("RESULTS_PATH")
 if not os.path.exists(RESULTS_PATH):
     os.makedirs(RESULTS_PATH)
 RESULT_FILE_PATH = f"{RESULTS_PATH}/results_{datetime.datetime.now().strftime('%d%m%Y%H%M%S')}.csv"
