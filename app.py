@@ -1,12 +1,15 @@
 from argparse import ArgumentError
-
 import streamlit as st
 import pandas as pd
 import time
 import config
+import ollama
 from main import run as run_graph
 from utils.charts import total_chart_plot, percentage_chart_plot
 
+@st.cache_data
+def get_local_models():
+    return [f"ollama/{model['model']}" for model in ollama.list()["models"]]
 
 def app():
     st.set_page_config(page_title="Safe-Force", page_icon="🛡️", layout="wide")
@@ -22,7 +25,7 @@ def app():
     st.markdown("-----------------------")
     st.markdown("  \n")
 
-    modelos_predefinidos = config.TARGETS
+    modelos_predefinidos = get_local_models() + [target for target in config.TARGETS if not target.__contains__("ollama/")]
 
     if not st.session_state.started:
         col1, col2, col3 = st.columns([1, 0.7, 2.3])
@@ -62,7 +65,20 @@ def app():
             st.button("Iniciar", disabled=True)
 
             with st.status("Procesando pasos...", expanded=True) as status:
-                # AQUI SE METE LA LOGICA DE LA APP
+                if any(algoritmo.__contains__("ollama/") for algoritmo in st.session_state.algoritmos):
+                    st.write("🔎 Detectados modelos Ollama")
+                    for modelo in [algoritmo for algoritmo in st.session_state.algoritmos if algoritmo.__contains__("ollama/")]:
+                        st.write(f"📥 Instalando {modelo}")
+                        try:
+                            ollama.pull(modelo.split("ollama/")[1])
+                        except:
+                            st.write(f"❌ Ha ocurrido un error durante la descarga del modelo {modelo}")
+                            time.sleep(0.5)
+                            st.session_state.done = False
+                            st.session_state.started = False
+                            st.rerun()
+                    st.write("✅ Modelos instalados")
+
                 st.write("🔍 Ejecutando Safe-Force...")
                 estado_final_grafo = run_graph(st.session_state.algoritmos)
                 if estado_final_grafo is None:
@@ -86,12 +102,14 @@ def app():
                         time.sleep(0.5)
                         st.session_state.done = False
                         st.session_state.started = False
+                        st.cache_data.clear()
             st.rerun()
 
         if st.session_state.done:
             if st.button("Reiniciar"):
                 st.session_state.done = False
                 st.session_state.started = False
+                st.cache_data.clear()
                 st.rerun()
 
             st.markdown("<div style='font-size: 32px; font-weight: bold;'>Datos Generados</div>", unsafe_allow_html=True)
