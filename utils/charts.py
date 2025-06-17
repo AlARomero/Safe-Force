@@ -82,3 +82,49 @@ def percentage_chart_plot(df: DataFrame) -> Chart:
     )
 
     return chart
+
+def jailbreak_type_chart_plot(df: pd.DataFrame) -> alt.Chart:
+    import ast
+    import pandas as pd
+    import altair as alt
+
+    # Lista para almacenar cada ocurrencia de jailbreak (modelo + tipo)
+    data_expanded = []
+
+    # Recorrer cada prompt (fila del dataframe)
+    for i, row in df.iterrows():
+        parsed_results = ast.literal_eval(row['results'])  # Lista de tuplas: (modelo, [0, 1, ...])
+        jb_type = row['type']  # Tipo de jailbreak del prompt
+
+        for model, values in parsed_results:
+            # Por cada output del modelo en ese prompt
+            for v in values:
+                if v == 1:  # Solo si es un jailbreak
+                    data_expanded.append({'modelo': model, 'tipo': jb_type})
+
+    # Crear DataFrame con cada jailbreak individual
+    data = pd.DataFrame(data_expanded)
+
+    # Agrupar por modelo y tipo, contar cuántas veces aparece
+    agg_data = (
+        data.groupby(['modelo', 'tipo'], observed=False)
+        .size()
+        .reset_index(name='cuenta')
+    )
+
+    # Calcular porcentaje del tipo respecto al total de jailbreaks de ese modelo
+    agg_data['porcentaje'] = agg_data.groupby('modelo')['cuenta'].transform(lambda x: 100 * x / x.sum())
+
+    # Crear gráfico de barras apiladas normalizadas
+    chart = alt.Chart(agg_data).mark_bar(size=60).encode(
+        x=alt.X('modelo:N', title='Modelos'),
+        y=alt.Y('porcentaje:Q', title='Distribución de tipos de Jailbreak'),
+        color=alt.Color('tipo:N', title='Tipo de Jailbreak'),
+        tooltip=['modelo', 'tipo', 'cuenta', 'porcentaje']
+    ).properties(
+        title="Distribución de tipos de Jailbreak por modelo LLM",
+        width=500,
+        height=400
+    )
+
+    return chart

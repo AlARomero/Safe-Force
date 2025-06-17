@@ -15,7 +15,7 @@ class MutateRandomSinglePolicy(MutatePolicy):
         if self.concatentate:
             results = [result + prompt_node_seed.prompt  for result in results]
 
-        children = [PromptNode(result, parent=prompt_node_seed, mutator=mutator) for result in results]
+        children = [PromptNode(result, prompt_node_seed.prompt_type, parent=prompt_node_seed, mutator=mutator) for result in results]
         prompt_node_seed.child.extend(children)
         return children
 

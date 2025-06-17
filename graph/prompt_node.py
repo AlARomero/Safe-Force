@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 class PromptNode:
     def __init__(self,
                  prompt: str,
+                 prompt_type: str,
                  response: Union[list[Tuple[str, str]], list[Tuple[str, list[str]]]] = None,
                  results: 'list[Tuple[str, int]]' = None,
                  parent: 'PromptNode' = None,
@@ -21,6 +22,7 @@ class PromptNode:
         self.parent: 'PromptNode' = parent
         self.mutator: 'Mutator' = mutator
         self.questions: list[str] = []
+        self.prompt_type: str = prompt_type
         self.mutators_score: dict[str, float] = mutators_score or {}
         self.child: 'list[PromptNode]' = []
         self.level: int = 0 if parent is None else parent.level + 1

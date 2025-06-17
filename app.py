@@ -5,7 +5,7 @@ import time
 import config
 import ollama
 from main import run as run_graph
-from utils.charts import total_chart_plot, percentage_chart_plot
+from utils.charts import total_chart_plot, percentage_chart_plot, jailbreak_type_chart_plot
 
 @st.cache_data
 def get_local_models():
@@ -42,11 +42,12 @@ def app():
         if archivo is not None:
             try:
                 df = pd.read_csv(archivo)
-                if list(df.columns) != ['prompt', 'response', 'parent', 'mutator', 'selection_policy', 'results']:
+                if list(df.columns) != ['prompt', 'type', 'response', 'parent', 'mutator', 'selection_policy', 'results']:
                     raise ArgumentError(None, "Error, csv invalido")
                 st.session_state.df = df
                 st.session_state.chart_percentage = percentage_chart_plot(st.session_state.df)
                 st.session_state.chart_bare_results = total_chart_plot(st.session_state.df)
+                st.session_state.chart_types = jailbreak_type_chart_plot(st.session_state.df)
                 st.session_state.started = True
                 st.session_state.done = True
                 st.rerun()
@@ -94,6 +95,7 @@ def app():
                         st.session_state.df = pd.read_csv(config.RESULT_FILE_PATH)
                         st.session_state.chart_percentage = percentage_chart_plot(st.session_state.df)
                         st.session_state.chart_bare_results = total_chart_plot(st.session_state.df)
+                        st.session_state.chart_types = jailbreak_type_chart_plot(st.session_state.df)
                         status.update(label="Finalizado", state="complete")
                         time.sleep(0.5)
                         st.session_state.done = True
@@ -107,6 +109,9 @@ def app():
 
         if st.session_state.done:
             if st.button("Reiniciar"):
+                st.session_state.chart_percentage = None
+                st.session_state.chart_bare_results = None
+                st.session_state.chart_types = None
                 st.session_state.done = False
                 st.session_state.started = False
                 st.cache_data.clear()
@@ -122,6 +127,7 @@ def app():
                 st.altair_chart(st.session_state.chart_bare_results, use_container_width=True)
 
             with col2:
+                st.altair_chart(st.session_state.chart_types, use_container_width=True)
                 st.dataframe(st.session_state.df)
 
             # Botón para descargar CSV

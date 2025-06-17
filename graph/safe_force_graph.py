@@ -51,7 +51,6 @@ def get_seed_prompt_node(state: GraphState) -> GraphState:
     return state
 
 def selector_node(state: GraphState) -> GraphState:
-    # TODO needs prompts: list[PromptNode]
     state.logger.info("🔴 | SELECTOR: Identificación de prompts prometedores y reenvío a mutación.")
     selected: list[PromptNode] = []
     for prompt in state.results_generated:
@@ -92,9 +91,9 @@ def write_file(file: str, results_generated: list[PromptNode], selection_policy:
     with open(file, mode, newline='', encoding='utf-8') as raw_fp:
         writer = csv.writer(raw_fp)
         if new:
-            writer.writerow(['prompt', 'response', 'parent', 'mutator', 'selection_policy', 'results'])
+            writer.writerow(['prompt', 'type', 'response', 'parent', 'mutator', 'selection_policy', 'results'])
         for prompt_node in results_generated:
-            writer.writerow([prompt_node.prompt, prompt_node.response, prompt_node.parent.prompt if prompt_node.parent else 'N/A', prompt_node.mutator.__class__.__name__ if prompt_node.mutator else 'N/A', selection_policy if selection_policy else 'N/A', prompt_node.results])
+            writer.writerow([prompt_node.prompt, prompt_node.prompt_type, prompt_node.response, prompt_node.parent.prompt if prompt_node.parent else 'N/A', prompt_node.mutator.__class__.__name__ if prompt_node.mutator else 'N/A', selection_policy if selection_policy else 'N/A', prompt_node.results])
 
 def build_graph():
     builder = StateGraph(GraphState)

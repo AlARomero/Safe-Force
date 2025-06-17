@@ -266,7 +266,8 @@ dependencies = [
     "torch (>=2.7.0,<3.0.0)",
     "xformers (>=0.0.30,<0.0.31)",
     "vllm (>=0.9.0.1,<0.10.0.0)",
-    "triton"
+    "triton",
+    "fastchat"
 ]
 
 
