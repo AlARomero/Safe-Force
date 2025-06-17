@@ -51,7 +51,6 @@ def get_seed_prompt_node(state: GraphState) -> GraphState:
     return state
 
 def selector_node(state: GraphState) -> GraphState:
-    # TODO needs prompts: list[PromptNode]
     state.logger.info("🔴 | SELECTOR: Identificación de prompts prometedores y reenvío a mutación.")
     selected: list[PromptNode] = []
     for prompt in state.results_generated:
