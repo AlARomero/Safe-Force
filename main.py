@@ -7,6 +7,7 @@ from agents.predictor_agent import PredictorAgent
 from agents.strategist_agent import StrategistAgent
 from graph.safe_force_graph import build_graph, write_file
 from graph.prompt_node import PromptNode
+from llm import LocalLLM
 from selection.selection import RoundRobinSelectPolicy, SelectPolicy
 from graph.graph_state import GraphState
 from utils.logger import get_basic_logger
@@ -70,5 +71,21 @@ def run(targets: list[str]) -> Optional[GraphState]:
         logger.error(f"Error durante ejecución:\n{traceback.format_exc()}\nEstado final en la iteración {initial_state.strategist_agent.iterations}.")
         return None
 
+def test_local_llm_generate_response(device: str):
+    llm = LocalLLM("meta-llama/Llama-3.2-1B-Instruct", device, 1,
+                   system_message="You are a helpful assistant. You will answer in spanish.")
+
+    response = llm.generate("[INST]Which are the most common use cases for the artificial intelligence?[/INST]",
+                            0.1,
+                            512,
+                            n=2,
+                            top_k=50,
+                            top_p=90
+                            )
+    response1: str = response[0]
+    response2: str = response[1]
+    print(response1+'\n'+response2)
+
 if __name__ == "__main__":
-    result = run(config.TARGETS)
+    #result = run(config.TARGETS)
+    test_local_llm_generate_response(config.DEVICE)
