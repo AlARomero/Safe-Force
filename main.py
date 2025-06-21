@@ -70,9 +70,5 @@ def run(targets: list[str]) -> Optional[GraphState]:
         logger.error(f"Error durante ejecución:\n{traceback.format_exc()}\nEstado final en la iteración {initial_state.strategist_agent.iterations}.")
         return None
 
-def test_local_llm_generate_response(device: str):
-    llm = LocalLLM("meta-llama/Llama-3.2-1B-Instruct", device, 1,
-                   system_message="You are a helpful assistant. You will answer in spanish.")
-
 if __name__ == "__main__":
     result = run(config.TARGETS)
