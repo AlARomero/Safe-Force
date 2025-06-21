@@ -6,6 +6,9 @@ services:
       - "8501:8501"
     environment:
       - OLLAMA_HOST=http://172.16.238.2:11434
+    volumes:
+      - ./logs:/app/logs
+      - ./results:/app/results
     depends_on:
       ollama:
         condition: service_healthy
