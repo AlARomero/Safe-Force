@@ -50,6 +50,9 @@ class LocalLLM(LLM):
     def generate(self, prompt, temperature=0.1, max_tokens=512, n=1, max_trials=10, failure_sleep_time=5) -> list[str]:
         results: list[str] = []
 
+        if temperature == 0:
+            temperature = 0.1
+
         conv_temp = get_conversation_template(self.model_path)
         conv_temp.set_system_message(self.system_message)
         conv_temp.append_message(conv_temp.roles[0], prompt)
@@ -77,6 +80,10 @@ class LocalLLM(LLM):
 
     def generate_batch(self, prompts, temperature=0.1, max_tokens=512, n=1, max_trials=10, failure_sleep_time=5):
         results = []
+
+        if temperature == 0:
+            temperature = 0.1
+
         with concurrent.futures.ThreadPoolExecutor() as executor:
             processed_prompts = [
                 f"{self.system_message}\n\nUser: {prompt}\nAssistant:" for prompt in prompts
