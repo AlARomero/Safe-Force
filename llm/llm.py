@@ -6,6 +6,8 @@ from fastchat.model import load_model, get_conversation_template
 import logging
 import time
 import concurrent.futures
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from vllm import LLM as vllm
 from vllm import SamplingParams
 import google.generativeai as palm
@@ -28,8 +30,67 @@ class LLM:
     def predict(self, sequences):
         raise NotImplementedError("LLM must implement predict method.")
 
-
 class LocalLLM(LLM):
+    def __init__(self,
+                model_path,
+                device: str = 'cpu',
+                dtype = torch.float16,
+                system_message: str = None):
+        super().__init__(model_path, self.__class__.__name__)
+
+        self.system_message = system_message if system_message is not None else "You are a helpful assistant."
+        self.device = device
+        self.tokenizer, self.model = self.create_model(model_path, dtype)
+
+    @torch.inference_mode()
+    def create_model(self, model_path: str, dtype):
+        return AutoTokenizer.from_pretrained(model_path), AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=dtype).to(self.device)
+
+    @torch.inference_mode()
+    def generate(self, prompt, temperature=0.1, max_tokens=512, n=1, max_trials=10, failure_sleep_time=5) -> list[str]:
+        results: list[str] = []
+
+        conv_temp = get_conversation_template(self.model_path)
+        conv_temp.set_system_message(self.system_message)
+        conv_temp.append_message(conv_temp.roles[0], prompt)
+        conv_temp.append_message(conv_temp.roles[1], None)
+        full_prompt = conv_temp.get_prompt()
+
+        #full_prompt = f"{self.system_message}\n\nUser: {prompt}\nAssistant:" TODO BORRAR ESTO
+        inputs = self.tokenizer(full_prompt, return_tensors="pt").to(self.device)
+        input_ids = inputs["input_ids"]
+
+        for _ in range(n):
+            trial: int = 0
+            try:
+                outputs = self.model.generate(**inputs, max_new_tokens=max_tokens, do_sample=True, temperature=temperature)
+                cleaned_outputs = outputs[0][input_ids.shape[-1]:]
+                results.append(self.tokenizer.decode(cleaned_outputs, skip_special_tokens=True))
+
+            except Exception as e:
+                trial += 1
+                if trial > max_trials:
+                    logging.error(f"Model call failed due to {e}. Max trials reached.")
+                    break
+                logging.warning(f"Model call failed due to {e}. Retrying {trial} / {max_trials} times...")
+
+        return results
+
+    def generate_batch(self, prompts, temperature=0.1, max_tokens=512, n=1, max_trials=10, failure_sleep_time=5):
+        results = []
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            processed_prompts = [
+                f"{self.system_message}\n\nUser: {prompt}\nAssistant:" for prompt in prompts
+            ]
+            futures = { executor.submit(self.generate, processed_prompt, temperature, max_tokens, n,
+                                       max_trials, failure_sleep_time):
+                            prompt for prompt, processed_prompt in zip(prompts, processed_prompts)}
+            for future in concurrent.futures.as_completed(futures):
+                results.extend(future.result())
+
+        return results
+
+class FastChatLocalLLM(LLM):
     def __init__(self,
                  model_path,
                  device='cpu',
