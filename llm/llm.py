@@ -32,7 +32,7 @@ class LLM:
 class LocalLLM(LLM):
     def __init__(self,
                  model_path,
-                 device='cuda',
+                 device='cpu',
                  num_gpus=1,
                  max_gpu_memory=None,
                  dtype=torch.float16,

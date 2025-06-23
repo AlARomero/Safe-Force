@@ -5,7 +5,7 @@ set -e
 echo "⏳ Esperando a que el servidor Ollama esté listo..."
 
 until ollama list > /dev/null 2>&1; do
-  sleep 2
+  sleep 10
 done
 
 echo "✅ Ollama está activo. Esperando a que el modelo llama3:8b esté listo..."

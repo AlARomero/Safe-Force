@@ -14,7 +14,7 @@ RUN pip install poetry
 
 WORKDIR /app
 
-COPY agents/ graph/ llm/ mutators/ prompts/ selection/ utils/ .env app.py config.py main.py poetry.lock pyproject.toml /app/
+COPY . /app
 
 RUN poetry config virtualenvs.create false
 RUN poetry install
