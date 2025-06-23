@@ -1,4 +1,3 @@
 from mutators.imutator import Mutator
 from mutators.local_mutators import LocalMutatorCrossOver, LocalMutatorExpand, LocalMutatorShorten, LocalMutatorRephrase, LocalMutatorGenerateSimilar
 from mutators.openai_mutators import OpenAIMutatorGenerateSimilar, OpenAIMutatorRephrase, OpenAIMutatorShorten, OpenAIMutatorExpand, OpenAIMutatorCrossOver
-from mutators.policies import MutateRandomSinglePolicy
