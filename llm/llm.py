@@ -56,7 +56,6 @@ class LocalLLM(LLM):
         conv_temp.append_message(conv_temp.roles[1], None)
         full_prompt = conv_temp.get_prompt()
 
-        #full_prompt = f"{self.system_message}\n\nUser: {prompt}\nAssistant:" TODO BORRAR ESTO
         inputs = self.tokenizer(full_prompt, return_tensors="pt").to(self.device)
         input_ids = inputs["input_ids"]
 
