@@ -47,13 +47,14 @@ class LocalLLM(LLM):
         return AutoTokenizer.from_pretrained(model_path), AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=dtype).to(self.device)
 
     @torch.inference_mode()
-    def generate(self, prompt, temperature=0.1, max_tokens=512, n=1, max_trials=10, failure_sleep_time=5) -> list[str]:
+    def generate(self, prompt, temperature=0.1, max_tokens=512, n=1) -> list[str]:
         results: list[str] = []
 
         if temperature == 0:
             temperature = 0.1
 
         conv_temp = get_conversation_template(self.model_path)
+        conv_temp.messages = []
         conv_temp.set_system_message(self.system_message)
         conv_temp.append_message(conv_temp.roles[0], prompt)
         conv_temp.append_message(conv_temp.roles[1], None)
@@ -63,18 +64,13 @@ class LocalLLM(LLM):
         input_ids = inputs["input_ids"]
 
         for _ in range(n):
-            trial: int = 0
             try:
                 outputs = self.model.generate(**inputs, max_new_tokens=max_tokens, do_sample=True, temperature=temperature)
                 cleaned_outputs = outputs[0][input_ids.shape[-1]:]
                 results.append(self.tokenizer.decode(cleaned_outputs, skip_special_tokens=True))
 
             except Exception as e:
-                trial += 1
-                if trial > max_trials:
-                    logging.error(f"Model call failed due to {e}. Max trials reached.")
-                    break
-                logging.warning(f"Model call failed due to {e}. Retrying {trial} / {max_trials} times...")
+                self.logger.error(f"Model call failed due to {e}.")
 
         return results
 
@@ -461,15 +457,18 @@ class OllamaLLM(LLM):
         ]
         results: list[str] = []
         for _ in range(n):
-            result = ollama.chat(
-                self.model_path,
-                messages=conversation,
-                options = {
-                    "temperature": temperature,
-                    "num_predict": max_tokens
-                }
-            )
-            results.append(result.message.content)
+            try:
+                result = ollama.chat(
+                    self.model_path,
+                    messages=conversation,
+                    options = {
+                        "temperature": temperature,
+                        "num_predict": max_tokens
+                    }
+                )
+                results.append(result.message.content)
+            except Exception as e:
+                self.logger.error(f"Model call failed due to {e}.")
 
         results = [result if result is not None else " " for result in results]
         if len(results) == 0:
