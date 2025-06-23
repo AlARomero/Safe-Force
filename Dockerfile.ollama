@@ -1,0 +1,6 @@
+FROM ollama/ollama
+ARG MODELS="llama3:8b"
+ENV OLLAMA_KEEP_ALIVE=24h
+RUN OLLAMA_MODELS=/root/models ollama serve & server=$! ; sleep 5 ; for m in $MODELS ; do ollama pull $m ; done ; kill $server
+ENTRYPOINT [ "/bin/bash", "-c", "cp -as /root/models /root/.ollama ; exec /bin/ollama $0" ]
+CMD [ "serve" ]

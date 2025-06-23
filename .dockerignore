@@ -1,5 +1,4 @@
 logs
 results
 volumen_app
-ollama_healthcheck.sh
 .env.template

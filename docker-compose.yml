@@ -1,6 +1,8 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.app
     container_name: app_service
     ports:
       - "8501:8501"
@@ -16,21 +18,23 @@ services:
       - app_network
 
   ollama:
-    image: ollama/ollama
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
     ports:
       - "7869:11434"
     volumes:
       - ./volumen_app:/root/.ollama
-      - ./ollama_healthcheck.sh:/app/ollama_healthcheck.sh
     container_name: ollama_service
+    healthcheck:
+      test: [ "CMD-SHELL", "ollama list | grep -q 'llama3:8b'" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
     networks:
       app_network:
         ipv4_address: 172.16.238.2
-    healthcheck:
-      test: ["CMD-SHELL", "/app/ollama_healthcheck.sh"]
-      interval: 10s
-      timeout: 3s
-      retries: 240
 
 networks:
   app_network:
