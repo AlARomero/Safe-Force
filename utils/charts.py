@@ -13,7 +13,7 @@ def total_chart_plot(df: DataFrame) -> Chart:
         parsed_results = ast.literal_eval(row)
         for model, values in parsed_results:
             ones_count[model] += sum(v == 'Sí' for v in values)
-            total_count[model] += len(values)
+            total_count[model] += sum(v in ('Sí', 'No') for v in values)
 
     data = pd.DataFrame({
         'modelo': list(total_count.keys()),
@@ -42,7 +42,7 @@ def percentage_chart_plot(df: DataFrame) -> Chart:
         parsed_results = ast.literal_eval(row)
         for model, values in parsed_results:
             for v in values:
-                data_expanded.append({'modelo': model, 'valor': "Jailbreak" if v == 'Sí' else "Protected"})
+                data_expanded.append({'modelo': model, 'valor': "Jailbreak" if v == 'Sí' else "Protegido"})
 
     data = pd.DataFrame(data_expanded)
 
@@ -54,7 +54,7 @@ def percentage_chart_plot(df: DataFrame) -> Chart:
 
     agg_data['porcentaje'] = agg_data.groupby('modelo')['cuenta'].transform(lambda x: 100 * x / x.sum())
 
-    color_scale = alt.Scale(domain=["Jailbreak", "Protected"], range=['#81c784', '#ea5656'])
+    color_scale = alt.Scale(domain=["Jailbreak", "Protegido"], range=['#81c784', '#ea5656'])
 
     chart = alt.Chart(agg_data).mark_bar(size=60).encode(
         x=alt.X('modelo:N', title='Modelos'),

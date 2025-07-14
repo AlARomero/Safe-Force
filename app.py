@@ -39,7 +39,7 @@ def app():
         if archivo is not None:
             try:
                 df = pd.read_csv(archivo)
-                if list(df.columns) != ['Prompt padre', 'Entrada', 'Tipo', 'Respuestas por modelo', 'Mutador', 'Política de selección', 'Resultados por modelo']:
+                if list(df.columns) != ['Prompt padre', 'Entrada', 'Preguntas', 'Tipo', 'Respuestas por modelo', 'Mutador', 'Política de selección', 'Resultados por modelo']:
                     raise ArgumentError(None, "Error, csv inválido")
                 st.session_state.df = df
                 st.session_state.chart_percentage = percentage_chart_plot(st.session_state.df)
