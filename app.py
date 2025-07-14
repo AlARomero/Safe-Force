@@ -6,8 +6,6 @@ import config
 import ollama
 from main import run as run_graph
 from utils.charts import total_chart_plot, percentage_chart_plot, jailbreak_type_chart_plot
-import ast
-
 
 @st.cache_data
 def get_local_models():

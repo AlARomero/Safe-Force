@@ -122,11 +122,10 @@ def write_file(file: str, results_generated: list[PromptNode], selection_policy:
             if isinstance(prompt_node.results, list):
                 for model, preds in prompt_node.results:
                     if preds:
-                        texto_preds = ' | '.join(['Sí' if p == 1 else 'No' for p in preds])
-                        resultados_formateados.append(f"{model}: {texto_preds}")
+                        predicciones_formateadas = ['Sí' if p == 1 else 'No' for p in preds]
+                        resultados_formateados.append((model, predicciones_formateadas))
                     else:
                         resultados_formateados.append(f"{model}: Sin respuesta")
-            resultados_final = '\n'.join(resultados_formateados)
 
             writer.writerow([
                 prompt_node.parent.prompt if prompt_node.parent else 'N/A',
@@ -135,7 +134,7 @@ def write_file(file: str, results_generated: list[PromptNode], selection_policy:
                 respuestas_final,
                 mutator_map.get(prompt_node.mutator.__class__.__name__, 'N/A') if prompt_node.mutator else 'N/A',
                 policy_map.get(selection_policy, selection_policy if selection_policy else 'N/A'),
-                resultados_final
+                resultados_formateados
             ])
 
 def build_graph():
