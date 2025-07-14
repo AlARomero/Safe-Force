@@ -12,7 +12,7 @@ def total_chart_plot(df: DataFrame) -> Chart:
     total_count = defaultdict(int)
 
     # Recorrer cada fila del DataFrame
-    for row in df['results']:
+    for row in df['Resultados por modelo']:
         parsed_results = ast.literal_eval(row)  # Convertir de string a estructura Python
         for model, values in parsed_results:
             ones_count[model] += sum(v == 1 for v in values)
@@ -46,7 +46,7 @@ def percentage_chart_plot(df: DataFrame) -> Chart:
     data_expanded = []
 
     # Recorrer cada fila del DataFrame
-    for row in df['results']:
+    for row in df['Resultados por modelo']:
         parsed_results = ast.literal_eval(row)  # Convertir de string a estructura Python
         for model, values in parsed_results:
             for v in values:
